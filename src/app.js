@@ -5,7 +5,12 @@ const app = express();
 //It'll understand and read json data that user send 
 app.use(express.json());
 
-//request handler
+//REQUEST HANDLER
+
+//READING QUERY PARAMS IN THE ROUTES
+app.use("/user/:userId/:name",(req,res)=>{
+    console.log(req.params);//IT WILL READ THE DATA FROM URL AFTER /USER
+});
 
 //This will only handle GET call to /user
 app.get("/user",(req,res)=>{
