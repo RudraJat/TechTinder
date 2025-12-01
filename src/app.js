@@ -37,17 +37,37 @@ app.use(express.json());
 
 
 //ROUTE HANDDLER CHAINING
-app.use("/user",(req,res,next)=>{
-    // res.send("1st response");
-    console.log("This is response from first route handler");
-    next();
-},
-    (req,res)=>{
-        res.send("2nd response");
-        console.log("This is response from second route handler");
-    }
-)
+// app.use("/user",(req,res,next)=>{
+//     // res.send("1st response");
+//     console.log("This is response from first route handler");
+//     next();
+// },
+//     (req,res)=>{
+//         res.send("2nd response");
+//         console.log("This is response from second route handler");
+//     }
+// )
 
+
+//handle authorization middleware for all GET, POST, DELETE request to /user
+app.use("/user",(req,res,next)=>{
+    console.log("Authorization successful!");   
+    const token = "abac";
+    const isAuthorized = token === "abc";
+    if(!isAuthorized){
+        return res.status(401).send("Unauthorized User!");
+    } else{
+        next();
+    }
+});
+
+app.get("/user/getProfile",(req,res)=>{
+    res.send("user profile data");
+});
+
+app.get("/user/deleteProfile",(req,res)=>{
+    res.send("Deleted a profile");
+})
 app.listen(3000, ()=>{
     console.log("Server is successfully listening on port 3000...")
 });
