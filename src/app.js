@@ -50,24 +50,41 @@ app.use(express.json());
 
 
 //handle authorization middleware for all GET, POST, DELETE request to /user
-app.use("/user",(req,res,next)=>{
-    console.log("Authorization successful!");   
-    const token = "abac";
-    const isAuthorized = token === "abc";
-    if(!isAuthorized){
-        return res.status(401).send("Unauthorized User!");
-    } else{
-        next();
-    }
-});
+// app.use("/user",(req,res,next)=>{
+//     console.log("Authorization successful!");   
+//     const token = "abac";
+//     const isAuthorized = token === "abc";
+//     if(!isAuthorized){
+//         return res.status(401).send("Unauthorized User!");
+//     } else{
+//         next();
+//     }
+// });
 
-app.get("/user/getProfile",(req,res)=>{
-    res.send("user profile data");
-});
+// app.get("/user/getProfile",(req,res)=>{
+//     res.send("user profile data");
+// });
 
-app.get("/user/deleteProfile",(req,res)=>{
-    res.send("Deleted a profile");
-})
+// app.get("/user/deleteProfile",(req,res)=>{
+//     res.send("Deleted a profile");
+// })
+
+//Error handling middleware
+app.get("/admin",(req,res)=>{
+    // try{
+        
+    throw new Error("adkfadf");
+    res.send("admin route");
+    // }catch(err){
+        //     res.status(500).send("Something went wrong in admin route!");
+        // }
+    });
+    
+    // always keep the sequence same i.e. err will come first then req, res, next
+    app.use("/",(err,req,res,next)=>{
+        res.status(500).send("Something went wrong! ");
+    });
+    
 app.listen(3000, ()=>{
     console.log("Server is successfully listening on port 3000...")
 });
