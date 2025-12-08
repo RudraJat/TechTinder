@@ -5,13 +5,28 @@ const User = require('./model/user.js');
 const app = express();
 
 //creating api for metadata
+// app.post("/signup", async(req, res)=>{
+//     const users = new User({
+//         firstName: "Rudra",
+//         lastName: "Pratap Singh",
+//         email: "rudra@example.com",
+//         password: "password123",
+//     });
+
+//     try{
+//         await users.save();
+//         res.send("User signed up successfully!");
+//     }catch(err){
+//         res.status(201).send("Error signing up user."+err.message);
+//     }
+// });
+
+//parsing json data from request bodY
+app.use(express.json());
+
 app.post("/signup", async(req, res)=>{
-    const users = new User({
-        firstName: "Rudra",
-        lastName: "Pratap Singh",
-        email: "rudra@example.com",
-        password: "password123",
-    });
+    //Creating a new instance of User model
+    const users = new User(req.body);
 
     try{
         await users.save();
