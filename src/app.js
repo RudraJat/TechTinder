@@ -36,6 +36,22 @@ app.post("/signup", async(req, res)=>{
     }
 });
 
+//GET USER BY EMAIL
+app.get("/user", async(req, res)=>{
+    const userEmail = req.body.email;
+
+    try{
+        const user = await User.findOne({email: userEmail});
+        if(!user){
+            res.status(404).send("User not found");
+        }else{
+            res.send(user);
+        }
+    }catch(err){
+        res.status(500).send("Error retrieving user. "+err.message);
+    }
+})
+
 connectDB()
     .then(()=>{
         console.log("Database connected successfully!");
