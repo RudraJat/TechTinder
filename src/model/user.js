@@ -28,12 +28,22 @@ const userSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
+        //it will only work when we create new object but not for updating existing object
+        validate(value){
+            //if the value is not one of the following, throw an error
+            if(!["Male", "Female", "Other"].includes(value)){
+                throw new Error("Invalid gender value");
+            }
+        }
     },
     bio: {
         type: String,
         maxlength: 500,
         default: "This user prefers to keep an air of mystery about them.",
     }, 
+    skills: {
+        type: [String], // Array of strings
+    }
 });
 
 const User = mongoose.model("User", userSchema);
