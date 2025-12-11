@@ -1,6 +1,8 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
 const connectDB = require('./config/database.js');
 const User = require('./model/user.js');
+const {validateSignupData }= require('./utils/validate.js');
 
 const app = express();
 
@@ -25,10 +27,18 @@ const app = express();
 app.use(express.json());
 
 app.post("/signup", async(req, res)=>{
+    //validating signup data
+    try{
+        validateSignupData(req);
+
+    // Encrypt the password before saving to database
+    const {password} = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10); //10 is the salt rounds- the higher the rounds, the more secure but slower
+    console.log("Hashed Password:", hashedPassword);
     //Creating a new instance of User model
     const users = new User(req.body);
 
-    try{
+    
         await users.save();
         res.send("User signed up successfully!");
     }catch(err){
