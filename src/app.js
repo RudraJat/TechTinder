@@ -26,6 +26,7 @@ const app = express();
 //parsing json data from request bodY
 app.use(express.json());
 
+//SIGNUP api- POST /signup - create a new user
 app.post("/signup", async (req, res) => {
   //validating signup data
   try {
@@ -47,9 +48,28 @@ app.post("/signup", async (req, res) => {
     await users.save();
     res.send("User signed up successfully!");
   } catch (err) {
-    res.status(201).send("Error signing up user." + err.message);
+    res.status(400).send("Error signing up user." + err.message);
   }
 });
+
+//LOGIN api- POST /login - login a user
+app.post("/login", async(req,res)=>{
+  try{
+    const {email, password} = req.body;
+
+    const user = await User.findOne({email})
+    if(!user){
+      throw new Error("User not found");
+    }
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if(!isPasswordMatch){
+      throw new Error("Invalid password");                                        
+    }
+    res.send("User logging in successfully!");
+  }catch (err) {
+    res.status(400).send("Error logging in user." + err.message);
+  }
+})
 
 //GET USER BY EMAIL
 app.get("/user", async (req, res) => {
