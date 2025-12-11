@@ -46,6 +46,7 @@ const userSchema = new mongoose.Schema({
         min: 13,
     },
     gender: {
+        
         type: String,
         //it will only work when we create new object but not for updating existing object
         validate(value){
