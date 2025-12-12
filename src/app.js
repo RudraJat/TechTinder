@@ -63,8 +63,14 @@ app.post("/login", async(req,res)=>{
     }
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if(!isPasswordMatch){
+
       throw new Error("Invalid password");                                        
     }
+    
+    //COOKIE set 
+    res.cookie("token", "afkdfadfadfafa");
+
+
     res.send("User logging in successfully!");
   }catch (err) {
     res.status(400).send("Error logging in user." + err.message);
