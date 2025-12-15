@@ -67,15 +67,13 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("User not found");
     }
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    const isPasswordMatch = await user.validatePassword(password);
     if (!isPasswordMatch) {
       throw new Error("Invalid password");
     }
 
     //JWT token generation --- we are hiding user id in the token and secret key is only known to the server
-    const token = await jwt.sign({ _id: user._id }, "RudraSecretKey", {
-      expiresIn: "7d",
-    });
+    const token = await user.getJWT();
 
     //COOKIE set
     res.cookie("token", token, {
