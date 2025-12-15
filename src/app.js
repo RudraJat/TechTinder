@@ -3,9 +3,14 @@ const bcrypt = require("bcrypt");
 const connectDB = require("./config/database.js");
 const User = require("./model/user.js");
 const { validateSignupData } = require("./utils/validate.js");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
+//creating an express app
 const app = express();
 
+//using cookie parser middleware
+app.use(cookieParser());
 //creating api for metadata
 // app.post("/signup", async(req, res)=>{
 //     const users = new User({
@@ -52,25 +57,28 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+
 //LOGIN api- POST /login - login a user
 app.post("/login", async(req,res)=>{
   try{
     const {email, password} = req.body;
-
+    
     const user = await User.findOne({email})
     if(!user){
       throw new Error("User not found");
     }
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if(!isPasswordMatch){
-
+      
       throw new Error("Invalid password");                                        
     }
+
+    //JWT token generation --- we are hiding user id in the token and secret key is only known to the server
+    const token = await jwt.sign({_id: user._id}, "RudraSecretKey");
     
     //COOKIE set 
-    res.cookie("token", "afkdfadfadfafa");
-
-
+    res.cookie("token", token);
+    
     res.send("User logging in successfully!");
   }catch (err) {
     res.status(400).send("Error logging in user." + err.message);
@@ -78,6 +86,24 @@ app.post("/login", async(req,res)=>{
 })
 
 //GET USER BY EMAIL
+//get cookies
+app.get("/profile", async(req,res)=>{
+  const cookies = req.cookies;
+  console.log(cookies);
+
+  //validating jwt token from cookies
+  const {token} = cookies;
+  const decodedMessage = await jwt.verify(token, "RudraSecretKey");
+
+  const {_id} = decodedMessage;
+
+  console.log("Logged in user id is: "+ _id);
+
+
+  res.send("Reading cookies!!!");
+});
+
+//USER api- GET /user - get user by email from the database
 app.get("/user", async (req, res) => {
   const userEmail = req.body.email;
 
