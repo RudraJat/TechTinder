@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../model/user.js");
 
+//yeh authenticate karega ki user logged in hai ya nahi or fir hum isse har api me use kar sakte hain jaha authentication chahiye
 const userAuth = async (req, res, next)=>{
     try{
         const {token}=req.cookies;
