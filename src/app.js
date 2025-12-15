@@ -5,6 +5,7 @@ const User = require("./model/user.js");
 const { validateSignupData } = require("./utils/validate.js");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const {userAuth} = require("./middlewares/auth.js");
 
 //creating an express app
 const app = express();
@@ -85,32 +86,13 @@ app.post("/login", async(req,res)=>{
   }
 })
 
-//GET USER BY EMAIL
 //get cookies
-app.get("/profile", async(req,res)=>{
+//yha userAuth middleware phle call hoga or agar authentication ho gyi to hi aage profile wala code chalega
+app.get("/profile",userAuth, async(req,res)=>{
  try{
-  const cookies = req.cookies;
-  console.log(cookies);
-
-  //validating jwt token from cookies
-  const {token} = cookies;
-
-  if(!token){
-    throw new Error("No token found in cookies");
-  }
-
-  const decodedMessage = await jwt.verify(token, "RudraSecretKey");
-
-  const {_id} = decodedMessage;
-
   //fetching user from database
-  const user = await User.findById(_id);
-  if(!user){
-    throw new Error("User not found")
-  }
-  
+  const user = req.user;
   res.send(user);
-
  }catch(err){
   res.status(400).send("Error readin cookies. "+err.message);
  }
