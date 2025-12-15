@@ -9,7 +9,7 @@ const userAuth = async (req, res, next)=>{
         }
         const decodedMessage = await jwt.verify(token, "RudraSecretKey");
         const {_id}= decodedMessage;
-        const user = await user.findById(_id);
+        const user = await User.findById(_id);
         
         if(!user){
             throw new Error("User not found");
@@ -20,3 +20,5 @@ const userAuth = async (req, res, next)=>{
         res.status(400).send("Authentication failed. "+err.message);
     }
 }
+
+module.exports = { userAuth };
