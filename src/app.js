@@ -88,19 +88,32 @@ app.post("/login", async(req,res)=>{
 //GET USER BY EMAIL
 //get cookies
 app.get("/profile", async(req,res)=>{
+ try{
   const cookies = req.cookies;
   console.log(cookies);
 
   //validating jwt token from cookies
   const {token} = cookies;
+
+  if(!token){
+    throw new Error("No token found in cookies");
+  }
+
   const decodedMessage = await jwt.verify(token, "RudraSecretKey");
 
   const {_id} = decodedMessage;
 
-  console.log("Logged in user id is: "+ _id);
+  //fetching user from database
+  const user = await User.findById(_id);
+  if(!user){
+    throw new Error("User not found")
+  }
+  
+  res.send(user);
 
-
-  res.send("Reading cookies!!!");
+ }catch(err){
+  res.status(400).send("Error readin cookies. "+err.message);
+ }
 });
 
 //USER api- GET /user - get user by email from the database
