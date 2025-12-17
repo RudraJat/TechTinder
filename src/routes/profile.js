@@ -4,7 +4,7 @@ const { userAuth } = require("../middlewares/auth.js");
 
 //get cookies
 //yha userAuth middleware phle call hoga or agar authentication ho gyi to hi aage profile wala code chalega
-profileRouter.get("/profile", userAuth, async (req, res) => {
+profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
     //fetching user from database
     const user = req.user;
@@ -13,5 +13,7 @@ profileRouter.get("/profile", userAuth, async (req, res) => {
     res.status(400).send("Error readin cookies. " + err.message);
   }
 });
+
+
 
 module.exports = profileRouter;
