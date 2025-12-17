@@ -51,13 +51,17 @@ const userSchema = new mongoose.Schema(
     gender: {
         
         type: String,
-        //it will only work when we create new object but not for updating existing object
-        validate(value){
-            //if the value is not one of the following, throw an error
-            if(!["male", "female", "other"].includes(value)){
-                throw new Error("Invalid gender value");
-            }
+        enum:{
+            values: ["female", "male", "other"],
+            message: "{VALUE} is incorrect gender type."
         }
+        //it will only work when we create new object but not for updating existing object
+        // validate(value){
+        //     //if the value is not one of the following, throw an error
+        //     if(!["male", "female", "other"].includes(value)){
+        //         throw new Error("Invalid gender value");
+        //     }
+        // }
     },
     bio: {
         type: String,
