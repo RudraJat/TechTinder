@@ -1,6 +1,6 @@
 const express = require("express");
 const profileRouter = express.Router();
-const { userAuth } = require("./middlewares/auth.js");
+const { userAuth } = require("../middlewares/auth.js");
 
 //get cookies
 //yha userAuth middleware phle call hoga or agar authentication ho gyi to hi aage profile wala code chalega

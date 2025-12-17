@@ -1,8 +1,8 @@
 const express = require("express");
 const authRouter= express.Router();
 const bcrypt = require("bcrypt");
-const User = require("./model/user.js");
-const { validateSignupData } = require("./utils/validate.js");
+const User = require("../model/user.js");
+const { validateSignupData } = require("../utils/validate.js");
 
 //SIGNUP api- POST /signup - create a new user
 authRouter.post("/signup", async (req, res) => {

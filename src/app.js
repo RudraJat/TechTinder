@@ -1,14 +1,23 @@
 const express = require("express");
-
 const connectDB = require("./config/database.js");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+
 
 //creating an express app
 const app = express();
 
 //using cookie parser middleware
 app.use(cookieParser());
+app.use(express.json());
+
+//using auth router middleware
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+
 //creating api for metadata
 // app.post("/signup", async(req, res)=>{
 //     const users = new User({
@@ -27,8 +36,6 @@ app.use(cookieParser());
 // });
 
 //parsing json data from request bodY
-app.use(express.json());
-
 
 connectDB()
   .then(() => {
