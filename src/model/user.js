@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema(
     {
     firstName: {
         type: String,
+        // index: true, -- indexing to improve query performance
         minlength: 4,
         maxlength: 20,
         required: true,

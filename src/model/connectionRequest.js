@@ -22,6 +22,10 @@ const connectionRequestSchema = new mongoose.Schema({
 }
 );
 
+//indexing to improve query performance - jabh search karenge fromUserId or toUserId to isse easy ho jayega
+//This is known as compound index - an index on multiple fields
+connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 }); //1 for ascending order
+
 //Using pre method -  yeh save hone se pehle kuch operations karne ke liye hota hai
 connectionRequestSchema.pre("save", function(next){
     const connectionRequest = this;
