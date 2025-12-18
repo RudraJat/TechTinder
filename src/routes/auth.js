@@ -14,6 +14,7 @@ authRouter.post("/signup", async (req, res) => {
     const { firstName, lastName, email, password, skills } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10); //10 is the salt rounds- the higher the rounds, the more secure but slower
     console.log("Hashed Password:", hashedPassword);
+    
     //Creating a new instance of User model
     const users = new User({
       firstName,
