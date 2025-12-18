@@ -59,4 +59,19 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res)
   }
 });
 
+//iss api me status sirf accecpted or rejected ho skta he
+requestRouter.post("/request/review/:status/:requestId", userAuth, async(req, res)=>{
+  try{
+    const loggedInUser = req.user;
+    
+    //Must thing for this api
+    //Rudra => Kanak ko request bhji ho
+    //Send request status === interested only
+    //loggedInUserId = toUserId
+
+  }catch(err){
+    res.status(400).send("Error reviewing connection request. "+ err.message);
+  }
+});
+
 module.exports = requestRouter;
