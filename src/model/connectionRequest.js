@@ -22,5 +22,15 @@ const connectionRequestSchema = new mongoose.Schema({
 }
 );
 
+//Using pre method -  yeh save hone se pehle kuch operations karne ke liye hota hai
+connectionRequestSchema.pre("save", function(next){
+    const connectionRequest = this;
+      //preventing user from sending request to self
+    if(connectionRequest.fromUserId.toString() === connectionRequest.toUserId){  //without toString() it'll compare this ObjectId("507f1f77bcf86cd799439011") === "507f1f77bcf86cd799439011"
+      return res.status(400).json({message: "You can't send connection request to yourself."})
+    }
+    next();
+})
+
 const ConnectionRequest = mongoose.model("ConnectionRequest", connectionRequestSchema);
 module.exports = ConnectionRequest;
