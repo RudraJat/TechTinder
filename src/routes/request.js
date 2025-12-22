@@ -1,6 +1,6 @@
 const express=require("express");
 const requestRouter= express.Router();
-const { userAuth } = require("../middlewares/auth.js");
+const userAuth = require("../middlewares/auth.js");
 const ConnectionRequest = require("../model/connectionRequest.js");
 const User = require("../model/user.js");
 
@@ -68,6 +68,32 @@ requestRouter.post("/request/review/:status/:requestId", userAuth, async(req, re
     //Rudra => Kanak ko request bhji ho
     //Send request status === interested only
     //loggedInUserId = toUserId
+    //requestID should be valid and should exist in db
+    const {status, requestId} = req.params;
+    const isAllowedStatus = ["accepted", "rejected"];
+    if(!isAllowedStatus.includes(status)){
+      return res.status(400).json({message: "Invalid status type: "+status});
+    }
+
+    const connectionRequest = await ConnectionRequest.findOne({
+      _id: requestId, //finding request by its id
+      toUserId: loggedInUser._id, //ensuring that only the recipient can review the request
+      status: "interested" //only interested requests can be reviewed
+    });
+
+    if(!connectionRequest){
+      return res.status(400).json({message: "No valid connection request found to review."});
+    }
+    
+    connectionRequest.status = status;
+    const data = await connectionRequest.save();
+
+    res.json({
+      message: "Connection request reviewed successfully!!!",
+      data
+    });
+    
+
 
   }catch(err){
     res.status(400).send("Error reviewing connection request. "+ err.message);
