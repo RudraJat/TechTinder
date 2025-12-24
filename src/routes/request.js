@@ -50,8 +50,12 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res)
     });
     const data = await connectionRequest.save();
 
+    // Use actual user fields instead of ObjectId placeholders
+    const fromName = req.user?.firstName;
+    const toName = toUser.firstName ;
+
     res.json({
-      message: "Connection request sent successfully!!!",
+      message: `${fromName} connection request sent successfully to ${toName}. Status: ${status}.`,
       data
     })
   } catch (err) {
