@@ -68,14 +68,14 @@ const userSchema = new mongoose.Schema(
         type: String,
         maxlength: 500,
         default: "This user prefers to keep an air of mystery about them.",
-    }, 
-    skills: {
-        type: [String], // Array of strings
-        validate(value){
-            if(value.length < 1 || value.length > 10){
-                throw new Error("Skills must be between 1 and 10");
-            }
-        }
+    },
+    role: {
+        type: String,
+        enum: {
+            values: ["Frontend Developer", "Backend Developer", "Fullstack Developer", "Mobile Developer", "DevOps Engineer", "Designer", "Student", "Other"],
+            message: "{VALUE} is not a valid role"
+        },
+        default: "Developer"
     }
     },
     {

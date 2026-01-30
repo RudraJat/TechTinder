@@ -12,12 +12,13 @@ function Login() {
     e.preventDefault();
     try{
       const res=await axios.post("http://localhost:1111/login",{
-        emailId,
+        email,
         password,
       });
     }catch(error){
       console.log("Errro: "+error);
     }
+    alert('Welcome to TECHTINDER! 🎉');
   };
 
   return (

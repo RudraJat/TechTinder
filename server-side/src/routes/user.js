@@ -3,7 +3,7 @@ const userRouter = express.Router();
 const userAuth = require("../middlewares/auth");
 const ConnectionRequest = require("../model/connectionRequest");
 const { connection } = require("mongoose");
-const User = require("../model/user");
+const User = require("../model/userSchema");
 
 const USER_SAFE_DATA = "firstName lastName photoUrl age gender bio skills";
 

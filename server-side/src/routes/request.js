@@ -2,7 +2,7 @@ const express=require("express");
 const requestRouter= express.Router();
 const userAuth = require("../middlewares/auth.js");
 const ConnectionRequest = require("../model/connectionRequest.js");
-const User = require("../model/user.js");
+const User = require("../model/userSchema.js");
 
 //iss api me status sirf intersted or ignored ho skta he
 requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res) => {

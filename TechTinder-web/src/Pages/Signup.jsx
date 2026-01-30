@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Github, Linkedin, Mail, Eye, EyeOff, Code2, Users, Zap, CheckCircle2 } from 'lucide-react';
+import axios from 'axios';  
+import { Github, Linkedin, Mail, Eye, EyeOff, Code2, Users, Zap, CheckCircle2, AlertCircle } from 'lucide-react';
 function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -13,6 +15,7 @@ function Signup() {
   });
   
   const [isHovered, setIsHovered] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -20,9 +23,10 @@ function Signup() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    setError(''); // Clear error when user starts typing
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert('Passwords do not match!');
@@ -32,7 +36,31 @@ function Signup() {
       alert('Please agree to the terms and conditions');
       return;
     }
-    alert('Welcome to TECHTINDER! 🎉 Your developer journey begins now!');
+    try {
+      const res = await axios.post('http://localhost:1111/signup', {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      });
+      alert('Welcome to TECHTINDER! 🎉 Your developer journey begins now!');
+      // Reset form after successful signup
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        role: 'developer',
+        agreeToTerms: false
+      });
+    } catch (error) {
+      console.log('Error: ' + error);
+      const errorMessage = error.response?.data?.error || 'Signup failed. Please check your details and try again.';
+      setError(errorMessage);
+      alert(errorMessage);
+    }
   };
 
   return (
@@ -179,21 +207,49 @@ function Signup() {
 
               {/* Signup Form */}
               <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Full Name */}
-                <div>
-                  <label htmlFor="fullName" className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    id="fullName"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
-                    placeholder="John Doe"
-                    required
-                  />
+                {/* Error Alert */}
+                {error && (
+                  <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-red-800 font-semibold text-sm">Signup Error</p>
+                      <p className="text-red-700 text-sm mt-1">{error}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* First Name & Last Name in a row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="firstName" className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
+                      placeholder="John"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
+                      placeholder="Doe"
+                      required
+                    />
+                  </div>
                 </div>
 
                 {/* Email Input */}
@@ -261,6 +317,9 @@ function Signup() {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
+                  <p className="text-xs text-slate-500 mt-2 ml-1">
+                    Password must contain: uppercase, lowercase, number, symbol, and be at least 8 characters
+                  </p>
                 </div>
 
                 {/* Confirm Password */}
@@ -342,7 +401,7 @@ function Signup() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes blob {
           0% { transform: translate(0px, 0px) scale(1); }
           33% { transform: translate(30px, -50px) scale(1.1); }

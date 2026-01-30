@@ -5,9 +5,13 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
+const cors = require("cors");
 
 //creating an express app
 const app = express();
+
+//using CORS middleware to allow requests from frontend server
+app.use(cors());
 
 //using cookie parser middleware
 app.use(cookieParser());

@@ -1,7 +1,7 @@
 const express = require("express");
 const authRouter= express.Router();
 const bcrypt = require("bcrypt");
-const User = require("../model/user.js");
+const User = require("../model/userSchema.js");
 const { validateSignupData } = require("../utils/validate.js");
 
 //SIGNUP api- POST /signup - create a new user
@@ -11,21 +11,22 @@ authRouter.post("/signup", async (req, res) => {
     validateSignupData(req);
 
     // Encrypt the password before saving to database
-    const { firstName, lastName, email, password, skills } = req.body;
+    const { firstName, lastName, email, password, skills, role } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10); //10 is the salt rounds- the higher the rounds, the more secure but slower
    
     //Creating a new instance of User model
-    const users = new User({
+    const user = new User({
       firstName,
       lastName,
       email,
       password: hashedPassword,
       skills,
+      role,
     });
 
 
-    await users.save();
-    res.json({"message": "User signed up successfully!"});
+    await user.save();
+    res.json({data: user, "message": "User signed up successfully!"});
   } catch (err) {
     res.status(400).json({"error":"Error signing up user." + err.message});
   }
@@ -54,7 +55,7 @@ authRouter.post("/login", async (req, res) => {
       expires: new Date(Date.now() + 7 * 24 * 3600000),
     });
 
-    res.json({"message": "User logging in successfully!"});
+    res.json({data:user,"message": "User logging in successfully!"});
   } catch (err) {
     res.status(400).json({"error": "Error logging in user." + err.message});
   }
