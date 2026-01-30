@@ -23,6 +23,7 @@ authRouter.post("/signup", async (req, res) => {
       skills,
     });
 
+
     await users.save();
     res.json({"message": "User signed up successfully!"});
   } catch (err) {
