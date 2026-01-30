@@ -27,7 +27,7 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res)
     const existingRequest = await ConnectionRequest.findOne({
       //$or operator is used for checking multiple conditions in mongoose
       //phle hum check kar he ki agar A ne B ko req bhji hai to vo firse nhi bhj skta
-      //dusra hum check kar he ki agar B ne A ko req bhji hai to vo bhi firse nhi bhj skta
+      //dusra hum check kar he ki agar B ne A ko req bhji hai to bhi firse request nhi bhji jaa skti
       $or:[
         { fromUserId, toUserId },
         { fromUserId: toUserId, toUserId: fromUserId}
@@ -59,7 +59,7 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res)
       data
     })
   } catch (err) {
-    res.status(400).send("Error sending connection request. " + err.message);
+    res.status(400).json({"error": "Error sending connection request. " + err.message});
   }
 });
 
@@ -69,10 +69,11 @@ requestRouter.post("/request/review/:status/:requestId", userAuth, async(req, re
     const loggedInUser = req.user;
     
     //Must thing for this api
-    //Rudra => Kanak ko request bhji ho
+    //A => B ko request bhji ho
     //Send request status === interested only
     //loggedInUserId = toUserId
     //requestID should be valid and should exist in db
+
     const {status, requestId} = req.params;
     const isAllowedStatus = ["accepted", "rejected"];
     if(!isAllowedStatus.includes(status)){
@@ -100,7 +101,7 @@ requestRouter.post("/request/review/:status/:requestId", userAuth, async(req, re
 
 
   }catch(err){
-    res.status(400).send("Error reviewing connection request. "+ err.message);
+    res.status(400).json({"error": "Error reviewing connection request. "+ err.message});
   }
 });
 

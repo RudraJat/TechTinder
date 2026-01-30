@@ -13,8 +13,7 @@ authRouter.post("/signup", async (req, res) => {
     // Encrypt the password before saving to database
     const { firstName, lastName, email, password, skills } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10); //10 is the salt rounds- the higher the rounds, the more secure but slower
-    console.log("Hashed Password:", hashedPassword);
-    
+   
     //Creating a new instance of User model
     const users = new User({
       firstName,
@@ -27,7 +26,7 @@ authRouter.post("/signup", async (req, res) => {
     await users.save();
     res.send("User signed up successfully!");
   } catch (err) {
-    res.status(400).send("Error signing up user." + err.message);
+    res.status(400).json({"error":"Error signing up user." + err.message});
   }
 });
 
@@ -54,9 +53,9 @@ authRouter.post("/login", async (req, res) => {
       expires: new Date(Date.now() + 7 * 24 * 3600000),
     });
 
-    res.send("User logging in successfully!");
+    res.json({"message": "User logging in successfully!"});
   } catch (err) {
-    res.status(400).send("Error logging in user." + err.message);
+    res.status(400).json({"error": "Error logging in user." + err.message});
   }
 });
 
@@ -69,7 +68,7 @@ authRouter.post("/logout", async(req, res)=>{
 
     res.clearCookie("token");
     
-    res.send("User logged out successfully!!!");
+    res.json({"message": "User logged out successfully!!!"});
 });
 
 module.exports = authRouter;

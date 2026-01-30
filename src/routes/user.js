@@ -20,7 +20,7 @@ userRouter.get("/user/request/received", userAuth, async (req, res) => {
       data: connectionRequests,
     });
   } catch (err) {
-    res.status(400).send("Error fetching pending requests " + err.message);
+    res.status(400).json({"error": "Error fetching pending requests " + err.message});
   }
 });
 
@@ -31,7 +31,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
 
     const connectionRequest = await ConnectionRequest.find({
       $or: [
-        //agar Kalpit ne rudra ko request bheji or kalpit ko kanak ne request or accept kiya h to dono ko connection milega
+        //agar A ne B ko request bheji or B ne A ko request or accept kiya h to dono ko connection milega
         { fromUserId: loggedInUser._id, status: "accepted" },
         { toUserId: loggedInUser._id, status: "accepted" },
       ],
@@ -49,7 +49,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
     });
     res.json({ data });
   } catch (err) {
-    res.status(400).send("Error fetching connections " + err.message);
+    res.status(400).json({"error": "Error fetching connections " + err.message});
   }
 });
 
@@ -89,9 +89,9 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
       ],
     }).select(USER_SAFE_DATA).skip(skip).limit(limit); //pagination using skip and limit; 
 
-    res.send(feedUsers);
+    res.json({ data: feedUsers });
   } catch (err) {
-    res.status(400).send("Error fetching feed " + err.message);
+    res.status(400).json({"error": "Error fetching feed " + err.message});
   }
 });
 

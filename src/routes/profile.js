@@ -1,5 +1,4 @@
 const express = require("express");
-const profileRouter = express.Router();
 const userAuth = require("../middlewares/auth.js");
 const {
   validateEditProfileData,
@@ -7,15 +6,16 @@ const {
 } = require("../utils/validate");
 const bcrypt = require("bcrypt");
 
+const profileRouter = express.Router();
 //get cookies
 //yha userAuth middleware phle call hoga or agar authentication ho gyi to hi aage profile wala code chalega
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
     //fetching user from database
     const user = req.user;
-    res.send(user);
+    res.json({"data": user});
   } catch (err) {
-    res.status(400).send("Error readin cookies. " + err.message);
+    res.status(400).json({"error": "Error readin cookies. " + err.message});
   }
 });
 
@@ -37,7 +37,7 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
       data: loggedInUser,
     });
   } catch (err) {
-    res.status(400).send("Error editing profile. " + err.message);
+    res.status(400).json({"error": "Error editing profile. " + err.message});
   }
 });
 
@@ -60,7 +60,7 @@ profileRouter.patch("/profile/passwordChange", userAuth, async (req, res) => {
       message: "Password changed successfully!",
     });
   } catch (err) {
-    res.status(400).send("Error changing password. " + err.message);
+    res.status(400).json({"error": "Error changing password. " + err.message});
   }
 });
 

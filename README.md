@@ -8,3 +8,7 @@
  - /feed?page=4&limit=10 => 31-40 => .skip(30) & .limit(10)
 
  skip = (page-1)*limit
+
+
+ #Future 
+ - When user logout it should ask again that you want to logout or not
