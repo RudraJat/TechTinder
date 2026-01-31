@@ -1,3 +1,4 @@
+require("dotenv").config({ path: "../../.env" });
 const express = require("express");
 const connectDB = require("./config/database.js");
 const cookieParser = require("cookie-parser");
@@ -11,7 +12,10 @@ const cors = require("cors");
 const app = express();
 
 //using CORS middleware to allow requests from frontend server
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  credentials: true
+}));
 
 //using cookie parser middleware
 app.use(cookieParser());

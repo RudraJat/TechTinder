@@ -1,63 +1,108 @@
-import React, { useState } from 'react';
-import axios from 'axios';  
-import { Github, Linkedin, Mail, Eye, EyeOff, Code2, Users, Zap, CheckCircle2, AlertCircle } from 'lucide-react';
+import React, { useState } from "react";
+import axios from "axios";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import {
+  Github,
+  Mail,
+  Linkedin,
+  Eye,
+  EyeOff,
+  Code2,
+  Users,
+  Zap,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
+import GoogleIcon from "../Components/GoogleIcon";
 function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'developer',
-    agreeToTerms: false
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "developer",
+    agreeToTerms: false,
   });
-  
+
   const [isHovered, setIsHovered] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+
+  // Log Google Client ID to verify it's loaded
+  console.log("GOOGLE CLIENT ID:", import.meta.env.VITE_APP_GOOGLE_CLIENT_ID);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
-    setError(''); // Clear error when user starts typing
+    setError(""); // Clear error when user starts typing
+  };
+
+  // Google SSO Integration
+  const handleGoogleSuccess = async (authResponse) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:1111/google-login",
+        { credential: authResponse.credential },
+        { withCredentials: true },
+      );
+      alert("Welcome to TECHTINDER! 🎉 Your Google account is now connected!");
+      // Optionally redirect or update app state
+      console.log("User data:", res.data);
+    } catch (error) {
+      console.log("Google signup error:", error);
+      const errorMessage =
+        error.response?.data?.error ||
+        "Google signup failed. Please try again.";
+      setError(errorMessage);
+      alert(errorMessage);
+    }
+  };
+
+  const handleGoogleError = (error) => {
+    console.log("Google auth error:", error);
+    setError("Google Sign In was unsuccessful. Please try again later.");
+    alert("Google Sign In was unsuccessful. Please try again later.");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
+      alert("Passwords do not match!");
       return;
     }
     if (!formData.agreeToTerms) {
-      alert('Please agree to the terms and conditions');
+      alert("Please agree to the terms and conditions");
       return;
     }
     try {
-      const res = await axios.post('http://localhost:1111/signup', {
+      const res = await axios.post("http://localhost:1111/signup", {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
         role: formData.role,
       });
-      alert('Welcome to TECHTINDER! 🎉 Your developer journey begins now!');
+      alert("Welcome to TECHTINDER! 🎉 Your developer journey begins now!");
       // Reset form after successful signup
       setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        role: 'developer',
-        agreeToTerms: false
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        role: "developer",
+        agreeToTerms: false,
       });
     } catch (error) {
-      console.log('Error: ' + error);
-      const errorMessage = error.response?.data?.error || 'Signup failed. Please check your details and try again.';
+      console.log("Error: " + error);
+      const errorMessage =
+        error.response?.data?.error ||
+        "Signup failed. Please check your details and try again.";
       setError(errorMessage);
       alert(errorMessage);
     }
@@ -81,7 +126,9 @@ function Signup() {
           <div className="relative order-2 lg:order-1">
             {/* Floating logo badge */}
             <div className="absolute -top-6 -left-6 w-20 h-20 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/50 transform rotate-12 hover:rotate-0 transition-transform duration-500">
-              <span className="text-white font-black text-3xl transform -rotate-12 hover:rotate-0 transition-transform duration-500">&lt;/&gt;</span>
+              <span className="text-white font-black text-3xl transform -rotate-12 hover:rotate-0 transition-transform duration-500">
+                &lt;/&gt;
+              </span>
             </div>
 
             <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-12 border border-white/10 shadow-2xl">
@@ -90,7 +137,9 @@ function Signup() {
                 <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-fuchsia-400 mb-2 tracking-tight">
                   TECHTINDER
                 </h1>
-                <p className="text-slate-400 text-lg font-medium">Join the Developer Revolution</p>
+                <p className="text-slate-400 text-lg font-medium">
+                  Join the Developer Revolution
+                </p>
               </div>
 
               {/* Benefits List */}
@@ -98,34 +147,42 @@ function Signup() {
                 {[
                   {
                     icon: Code2,
-                    title: 'Find Your Coding Partner',
-                    description: 'Connect with developers who share your passion and skills',
-                    color: 'from-cyan-500 to-blue-500'
+                    title: "Find Your Coding Partner",
+                    description:
+                      "Connect with developers who share your passion and skills",
+                    color: "from-cyan-500 to-blue-500",
                   },
                   {
                     icon: Users,
-                    title: 'Build Together',
-                    description: 'Collaborate on projects and grow your portfolio',
-                    color: 'from-purple-500 to-pink-500'
+                    title: "Build Together",
+                    description:
+                      "Collaborate on projects and grow your portfolio",
+                    color: "from-purple-500 to-pink-500",
                   },
                   {
                     icon: Zap,
-                    title: 'Level Up Fast',
-                    description: 'Learn from peers and accelerate your career',
-                    color: 'from-fuchsia-500 to-orange-500'
-                  }
+                    title: "Level Up Fast",
+                    description: "Learn from peers and accelerate your career",
+                    color: "from-fuchsia-500 to-orange-500",
+                  },
                 ].map((benefit, idx) => (
                   <div
                     key={idx}
                     className="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10 hover:border-white/20 transition-all duration-300 group"
                   >
                     <div className="flex items-start gap-4">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${benefit.color} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
+                      <div
+                        className={`w-12 h-12 rounded-xl bg-gradient-to-br ${benefit.color} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}
+                      >
                         <benefit.icon className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-white font-bold text-lg mb-1">{benefit.title}</h3>
-                        <p className="text-slate-400 text-sm">{benefit.description}</p>
+                        <h3 className="text-white font-bold text-lg mb-1">
+                          {benefit.title}
+                        </h3>
+                        <p className="text-slate-400 text-sm">
+                          {benefit.description}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -136,20 +193,28 @@ function Signup() {
               <div className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-2xl p-6 border border-cyan-500/20 backdrop-blur-sm">
                 <div className="flex items-center gap-3 mb-4">
                   <CheckCircle2 className="w-6 h-6 text-cyan-400" />
-                  <span className="text-white font-bold text-lg">Trusted by 50,000+ Developers</span>
+                  <span className="text-white font-bold text-lg">
+                    Trusted by 50,000+ Developers
+                  </span>
                 </div>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <div className="text-2xl font-black text-white">4.9★</div>
-                    <div className="text-xs text-slate-400 font-semibold">Rating</div>
+                    <div className="text-xs text-slate-400 font-semibold">
+                      Rating
+                    </div>
                   </div>
                   <div>
                     <div className="text-2xl font-black text-white">100k+</div>
-                    <div className="text-xs text-slate-400 font-semibold">Matches</div>
+                    <div className="text-xs text-slate-400 font-semibold">
+                      Matches
+                    </div>
                   </div>
                   <div>
                     <div className="text-2xl font-black text-white">150+</div>
-                    <div className="text-xs text-slate-400 font-semibold">Countries</div>
+                    <div className="text-xs text-slate-400 font-semibold">
+                      Countries
+                    </div>
                   </div>
                 </div>
               </div>
@@ -162,9 +227,13 @@ function Signup() {
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
                 </div>
                 <div className="text-fuchsia-400">
-                  <span className="text-purple-400">import</span> {'{ future }'} <span className="text-purple-400">from</span> <span className="text-cyan-400">'techtinder'</span>;
+                  <span className="text-purple-400">import</span> {"{ future }"}{" "}
+                  <span className="text-purple-400">from</span>{" "}
+                  <span className="text-cyan-400">'techtinder'</span>;
                 </div>
-                <div className="text-slate-500">// Your journey starts here</div>
+                <div className="text-slate-500">
+                  // Your journey starts here
+                </div>
               </div>
             </div>
           </div>
@@ -177,22 +246,18 @@ function Signup() {
                 <h2 className="text-4xl font-black text-slate-900 mb-2">
                   Create Account 🚀
                 </h2>
-                <p className="text-slate-600 text-lg">
-                  Start your developer journey today
-                </p>
               </div>
 
               {/* Social Signup */}
-              <div className="grid grid-cols-3 gap-3 mb-8">
-                <button className="group flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-900 border-2 border-slate-200 hover:border-slate-900 rounded-xl p-3 transition-all duration-300">
-                  <Github className="w-5 h-5 text-slate-700 group-hover:text-white transition-colors" />
-                </button>
-                <button className="group flex items-center justify-center gap-2 bg-slate-50 hover:bg-blue-600 border-2 border-slate-200 hover:border-blue-600 rounded-xl p-3 transition-all duration-300">
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                <button className="group flex items-center justify-center gap-2 hover:bg-blue-600 border-2 hover:border-blue-600 rounded-md p-2 transition-all duration-300">
                   <Linkedin className="w-5 h-5 text-slate-700 group-hover:text-white transition-colors" />
                 </button>
-                <button className="group flex items-center justify-center gap-2 bg-slate-50 hover:bg-red-600 border-2 border-slate-200 hover:border-red-600 rounded-xl p-3 transition-all duration-300">
-                  <Mail className="w-5 h-5 text-slate-700 group-hover:text-white transition-colors" />
-                </button>
+
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                />
               </div>
 
               {/* Divider */}
@@ -201,7 +266,9 @@ function Signup() {
                   <div className="w-full border-t-2 border-slate-200"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-slate-500 font-semibold">OR SIGN UP WITH EMAIL</span>
+                  <span className="px-4 bg-white text-slate-500 font-semibold">
+                    OR SIGN UP WITH EMAIL
+                  </span>
                 </div>
               </div>
 
@@ -212,7 +279,9 @@ function Signup() {
                   <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-red-800 font-semibold text-sm">Signup Error</p>
+                      <p className="text-red-800 font-semibold text-sm">
+                        Signup Error
+                      </p>
                       <p className="text-red-700 text-sm mt-1">{error}</p>
                     </div>
                   </div>
@@ -221,7 +290,10 @@ function Signup() {
                 {/* First Name & Last Name in a row */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="firstName" className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
+                    <label
+                      htmlFor="firstName"
+                      className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide"
+                    >
                       First Name
                     </label>
                     <input
@@ -236,7 +308,10 @@ function Signup() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="lastName" className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
+                    <label
+                      htmlFor="lastName"
+                      className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide"
+                    >
                       Last Name
                     </label>
                     <input
@@ -254,7 +329,10 @@ function Signup() {
 
                 {/* Email Input */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide"
+                  >
                     Email Address
                   </label>
                   <input
@@ -271,7 +349,10 @@ function Signup() {
 
                 {/* Role Selection */}
                 <div>
-                  <label htmlFor="role" className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
+                  <label
+                    htmlFor="role"
+                    className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide"
+                  >
                     I am a
                   </label>
                   <select
@@ -295,12 +376,15 @@ function Signup() {
 
                 {/* Password Input */}
                 <div>
-                  <label htmlFor="password" className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide"
+                  >
                     Password
                   </label>
                   <div className="relative">
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       id="password"
                       name="password"
                       value={formData.password}
@@ -314,22 +398,30 @@ function Signup() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                   <p className="text-xs text-slate-500 mt-2 ml-1">
-                    Password must contain: uppercase, lowercase, number, symbol, and be at least 8 characters
+                    Password must contain: uppercase, lowercase, number, symbol,
+                    and be at least 8 characters
                   </p>
                 </div>
 
                 {/* Confirm Password */}
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide"
+                  >
                     Confirm Password
                   </label>
                   <div className="relative">
                     <input
-                      type={showConfirmPassword ? 'text' : 'password'}
+                      type={showConfirmPassword ? "text" : "password"}
                       id="confirmPassword"
                       name="confirmPassword"
                       value={formData.confirmPassword}
@@ -340,10 +432,16 @@ function Signup() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                     >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -360,12 +458,18 @@ function Signup() {
                       required
                     />
                     <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
-                      I agree to the{' '}
-                      <a href="#" className="text-purple-600 hover:text-purple-700 font-bold underline">
+                      I agree to the{" "}
+                      <a
+                        href="#"
+                        className="text-purple-600 hover:text-purple-700 font-bold underline"
+                      >
                         Terms of Service
-                      </a>{' '}
-                      and{' '}
-                      <a href="#" className="text-purple-600 hover:text-purple-700 font-bold underline">
+                      </a>{" "}
+                      and{" "}
+                      <a
+                        href="#"
+                        className="text-purple-600 hover:text-purple-700 font-bold underline"
+                      >
                         Privacy Policy
                       </a>
                     </span>
@@ -379,15 +483,18 @@ function Signup() {
                   onMouseLeave={() => setIsHovered(false)}
                   className="w-full bg-gradient-to-r from-cyan-500 via-purple-600 to-fuchsia-600 hover:from-cyan-400 hover:via-purple-500 hover:to-fuchsia-500 text-white font-black py-4 rounded-xl shadow-lg hover:shadow-2xl hover:shadow-purple-500/50 transform hover:-translate-y-1 transition-all duration-300 text-lg uppercase tracking-wider"
                 >
-                  {isHovered ? '🎉 Join Now' : 'Create Account'}
+                  {isHovered ? "🎉 Join Now" : "Create Account"}
                 </button>
               </form>
 
               {/* Login Link */}
               <div className="mt-8 text-center">
                 <p className="text-slate-600 font-medium">
-                  Already have an account?{' '}
-                  <a href="http://localhost:5173/login" className="text-purple-600 hover:text-purple-700 font-bold underline decoration-2 underline-offset-4 hover:underline-offset-2 transition-all">
+                  Already have an account?{" "}
+                  <a
+                    href="http://localhost:5173/login"
+                    className="text-purple-600 hover:text-purple-700 font-bold underline decoration-2 underline-offset-4 hover:underline-offset-2 transition-all"
+                  >
                     Sign In
                   </a>
                 </p>

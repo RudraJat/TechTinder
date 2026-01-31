@@ -31,11 +31,17 @@ const userSchema = new mongoose.Schema(
     },
     password: {
         type: String,
+        required: false,
         validate(value){
-            if(!validator.isStrongPassword(value)){
+            if(value && !validator.isStrongPassword(value)){
                 throw new Error("Enter a strong password");
             }
         }
+    },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true
     },
     photoUrl: {
         type: String,

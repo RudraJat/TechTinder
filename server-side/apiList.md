@@ -3,6 +3,7 @@
 ## authRouter
 - POST /signup
 - POST /login
+- POST /google-login - Login/signup with Google OAuth
 - POST /logout
 
 ## profileRouter
