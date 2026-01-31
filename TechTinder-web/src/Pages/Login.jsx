@@ -62,7 +62,7 @@ function Login() {
           {/* Left Section - Branding & Info */}
           <div className="relative">
             {/* Floating logo badge */}
-            <div className="absolute -top-6 -left-6 w-20 h-20 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/50 transform rotate-12 hover:rotate-0 transition-transform duration-500">
+            <div className="absolute -top-6 -left-9 w-20 h-20 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/50 transform rotate-12 hover:rotate-0 transition-transform duration-500">
               <span className="text-white font-black text-3xl transform -rotate-12 hover:rotate-0 transition-transform duration-500">&lt;/&gt;</span>
             </div>
 
@@ -79,18 +79,9 @@ function Login() {
               <div className="space-y-4 mb-8">
                 <div className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-2xl p-6 border border-cyan-500/20 backdrop-blur-sm group hover:border-cyan-400/40 transition-all duration-300">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Active Devs</span>
-                    <span className="text-cyan-400 text-xs font-bold px-2 py-1 bg-cyan-500/20 rounded-full">+24%</span>
+                    <span className="text-slate-400 text-sm font-semibold uppercase tracking-wider text-center">Active Devs</span>
                   </div>
                   <div className="text-4xl font-black text-white">47,892</div>
-                </div>
-
-                <div className="bg-gradient-to-r from-purple-500/10 to-fuchsia-500/10 rounded-2xl p-6 border border-purple-500/20 backdrop-blur-sm group hover:border-purple-400/40 transition-all duration-300">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Matches Today</span>
-                    <span className="text-fuchsia-400 text-xs font-bold px-2 py-1 bg-fuchsia-500/20 rounded-full">Live</span>
-                  </div>
-                  <div className="text-4xl font-black text-white">2,847</div>
                 </div>
               </div>
 
@@ -98,7 +89,6 @@ function Login() {
               <div className="space-y-3">
                 {[
                   { icon: '➡️', text: 'Instant matching with skilled developers' },
-                  { icon: '➡️', text: 'Global community of 100k+ coders' },
                   { icon: '➡️', text: 'Build projects together in real-time' }
                 ].map((feature, idx) => (
                   <div key={idx} className="flex items-center gap-3 text-slate-300 group hover:text-white transition-colors duration-300">

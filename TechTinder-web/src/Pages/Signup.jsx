@@ -31,7 +31,7 @@ function Signup() {
   const [error, setError] = useState("");
 
   // Log Google Client ID to verify it's loaded
-  console.log("GOOGLE CLIENT ID:", import.meta.env.VITE_APP_GOOGLE_CLIENT_ID);
+  // console.log("GOOGLE CLIENT ID:", import.meta.env.VITE_APP_GOOGLE_CLIENT_ID);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -125,7 +125,7 @@ function Signup() {
           {/* Left Section - Branding & Benefits */}
           <div className="relative order-2 lg:order-1">
             {/* Floating logo badge */}
-            <div className="absolute -top-6 -left-6 w-20 h-20 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/50 transform rotate-12 hover:rotate-0 transition-transform duration-500">
+            <div className="absolute -top-6 -left-9 w-20 h-20 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/50 transform rotate-12 hover:rotate-0 transition-transform duration-500">
               <span className="text-white font-black text-3xl transform -rotate-12 hover:rotate-0 transition-transform duration-500">
                 &lt;/&gt;
               </span>
@@ -189,36 +189,6 @@ function Signup() {
                 ))}
               </div>
 
-              {/* Trust indicators */}
-              <div className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-2xl p-6 border border-cyan-500/20 backdrop-blur-sm">
-                <div className="flex items-center gap-3 mb-4">
-                  <CheckCircle2 className="w-6 h-6 text-cyan-400" />
-                  <span className="text-white font-bold text-lg">
-                    Trusted by 50,000+ Developers
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-black text-white">4.9★</div>
-                    <div className="text-xs text-slate-400 font-semibold">
-                      Rating
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-black text-white">100k+</div>
-                    <div className="text-xs text-slate-400 font-semibold">
-                      Matches
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-black text-white">150+</div>
-                    <div className="text-xs text-slate-400 font-semibold">
-                      Countries
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Decorative code snippet */}
               <div className="mt-8 bg-slate-950/50 rounded-xl p-4 border border-fuchsia-500/20 font-mono text-xs overflow-hidden">
                 <div className="flex items-center gap-2 mb-2">
@@ -240,16 +210,16 @@ function Signup() {
 
           {/* Right Section - Signup Form */}
           <div className="relative order-1 lg:order-2">
-            <div className="bg-white rounded-3xl p-10 shadow-2xl shadow-purple-900/50 transform hover:scale-[1.02] transition-all duration-500">
+            <div className="bg-white rounded-3xl p-6 shadow-2xl shadow-purple-900/50 transform hover:scale-[1.02] transition-all duration-500">
               {/* Header */}
-              <div className="mb-8">
+              <div className="mb-3 text-center">
                 <h2 className="text-4xl font-black text-slate-900 mb-2">
                   Create Account 🚀
                 </h2>
               </div>
 
               {/* Social Signup */}
-              <div className="grid grid-cols-2 gap-3 mb-8">
+              <div className="grid grid-cols-2 gap-3 mb-3">
                 <button className="group flex items-center justify-center gap-2 hover:bg-blue-600 border-2 hover:border-blue-600 rounded-md p-2 transition-all duration-300">
                   <Linkedin className="w-5 h-5 text-slate-700 group-hover:text-white transition-colors" />
                 </button>
@@ -261,7 +231,7 @@ function Signup() {
               </div>
 
               {/* Divider */}
-              <div className="relative mb-8">
+              <div className="relative mb-3">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t-2 border-slate-200"></div>
                 </div>
@@ -292,7 +262,7 @@ function Signup() {
                   <div>
                     <label
                       htmlFor="firstName"
-                      className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide"
+                      className="block text-sm font-bold text-slate-900 mb-1 uppercase tracking-wide"
                     >
                       First Name
                     </label>
@@ -302,7 +272,7 @@ function Signup() {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
-                      className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
+                      className="w-full px-4 py-2 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
                       placeholder="John"
                       required
                     />
@@ -310,7 +280,7 @@ function Signup() {
                   <div>
                     <label
                       htmlFor="lastName"
-                      className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide"
+                      className="block text-sm font-bold text-slate-900 mb-1 uppercase tracking-wide"
                     >
                       Last Name
                     </label>
@@ -320,7 +290,7 @@ function Signup() {
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleChange}
-                      className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
+                      className="w-full px-4 py-2 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
                       placeholder="Doe"
                       required
                     />
@@ -331,7 +301,7 @@ function Signup() {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide"
+                    className="block text-sm font-bold text-slate-900 mb-1 uppercase tracking-wide"
                   >
                     Email Address
                   </label>
@@ -341,7 +311,7 @@ function Signup() {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
+                    className="w-full px-4 py-2 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
                     placeholder="developer@example.com"
                     required
                   />
@@ -351,7 +321,7 @@ function Signup() {
                 <div>
                   <label
                     htmlFor="role"
-                    className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide"
+                    className="block text-sm font-bold text-slate-900 mb-1 uppercase tracking-wide"
                   >
                     I am a
                   </label>
@@ -360,7 +330,7 @@ function Signup() {
                     name="role"
                     value={formData.role}
                     onChange={handleChange}
-                    className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium cursor-pointer"
+                    className="w-full px-4 py-2 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium cursor-pointer"
                     required
                   >
                     <option value="developer">Frontend Developer</option>
@@ -378,7 +348,7 @@ function Signup() {
                 <div>
                   <label
                     htmlFor="password"
-                    className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide"
+                    className="block text-sm font-bold text-slate-900 mb-1 uppercase tracking-wide"
                   >
                     Password
                   </label>
@@ -389,7 +359,7 @@ function Signup() {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
+                      className="w-full px-4 py-2 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
                       placeholder="Create a strong password"
                       required
                     />
@@ -415,7 +385,7 @@ function Signup() {
                 <div>
                   <label
                     htmlFor="confirmPassword"
-                    className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide"
+                    className="block text-sm font-bold text-slate-900 mb-1 uppercase tracking-wide"
                   >
                     Confirm Password
                   </label>
@@ -426,7 +396,7 @@ function Signup() {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
+                      className="w-full px-4 py-2 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium"
                       placeholder="Re-enter your password"
                       required
                     />
@@ -454,7 +424,7 @@ function Signup() {
                       name="agreeToTerms"
                       checked={formData.agreeToTerms}
                       onChange={handleChange}
-                      className="w-5 h-5 mt-0.5 rounded border-2 border-slate-300 text-purple-600 focus:ring-2 focus:ring-purple-500 cursor-pointer"
+                      className="w-5 h-5 rounded border-2 border-slate-300 text-purple-600 focus:ring-2 focus:ring-purple-500 cursor-pointer"
                       required
                     />
                     <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
@@ -481,14 +451,14 @@ function Signup() {
                   type="submit"
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
-                  className="w-full bg-gradient-to-r from-cyan-500 via-purple-600 to-fuchsia-600 hover:from-cyan-400 hover:via-purple-500 hover:to-fuchsia-500 text-white font-black py-4 rounded-xl shadow-lg hover:shadow-2xl hover:shadow-purple-500/50 transform hover:-translate-y-1 transition-all duration-300 text-lg uppercase tracking-wider"
+                  className="w-full bg-gradient-to-r from-cyan-500 via-purple-600 to-fuchsia-600 hover:from-cyan-400 hover:via-purple-500 hover:to-fuchsia-500 text-white font-black py-1.5 rounded-xl shadow-lg hover:shadow-2xl hover:shadow-purple-500/50 transform hover:-translate-y-1 transition-all duration-300 text-lg uppercase tracking-wider"
                 >
                   {isHovered ? "🎉 Join Now" : "Create Account"}
                 </button>
               </form>
 
               {/* Login Link */}
-              <div className="mt-8 text-center">
+              <div className="mt-4 text-center">
                 <p className="text-slate-600 font-medium">
                   Already have an account?{" "}
                   <a
