@@ -75,7 +75,7 @@ const userSchema = new mongoose.Schema(
             values: ["Frontend Developer", "Backend Developer", "Fullstack Developer", "Mobile Developer", "DevOps Engineer", "Designer", "Student", "Other"],
             message: "{VALUE} is not a valid role"
         },
-        default: "Developer"
+        default: "Other"
     }
     },
     {

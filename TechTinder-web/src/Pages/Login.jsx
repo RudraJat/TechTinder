@@ -1,6 +1,8 @@
 import{ useState } from 'react';
-import { Github, Linkedin, Mail, Eye, EyeOff } from 'lucide-react';
+import { Linkedin, Chrome, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
+import {GoogleOAuthProvider, GoogleLogin} from "@react-oauth/google";
+import GoogleIcon from "../Components/GoogleIcon";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +22,28 @@ function Login() {
     }
     alert('Welcome to TECHTINDER! 🎉');
   };
+
+  //google SSO Integration
+
+  
+  const handleGoogleSuccess = async(authResponse) =>{
+    try{
+      const res = await axios.post("http://localhost:1111/auth/google-auth",{
+        idToken: authResponse.credential
+      },{
+        withCredentials:true
+      });
+      updateUserDetails(res.data.user);
+    }catch(error){
+      console.log(error);
+      setErrors({message: 'Error processing google auth, please try again'});
+  }
+  };
+
+  const handleGoogleError = async(error)=>{
+    console.log(error);
+    setErrors({message: 'Google Sign In was unsuccessful, try again later'});
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 flex items-center justify-center p-4 overflow-hidden relative">
@@ -113,16 +137,19 @@ function Login() {
               </div>
 
               {/* Social Login */}
-              <div className="grid grid-cols-3 gap-3 mb-8">
-                <button className="group flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-900 border-2 border-slate-200 hover:border-slate-900 rounded-xl p-3 transition-all duration-300">
-                  <Github className="w-5 h-5 text-slate-700 group-hover:text-white transition-colors" />
-                </button>
-                <button className="group flex items-center justify-center gap-2 bg-slate-50 hover:bg-blue-600 border-2 border-slate-200 hover:border-blue-600 rounded-xl p-3 transition-all duration-300">
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                
+                <button className="group flex items-center justify-center gap-2 hover:bg-blue-600 border-2  hover:border-blue-600 rounded-md p-2 transition-all duration-300">
                   <Linkedin className="w-5 h-5 text-slate-700 group-hover:text-white transition-colors" />
                 </button>
-                <button className="group flex items-center justify-center gap-2 bg-slate-50 hover:bg-red-600 border-2 border-slate-200 hover:border-red-600 rounded-xl p-3 transition-all duration-300">
-                  <Mail className="w-5 h-5 text-slate-700 group-hover:text-white transition-colors" />
-                </button>
+                {/* <button onClick={handleGoogleSuccess} className="group flex items-center justify-center gap-2 bg-slate-50 hover:bg-red-600 border-2 border-slate-200 hover:border-red-600 rounded-xl p-3 transition-all duration-300">
+                  <GoogleIcon size={18} />
+                </button> */}
+                <div>
+                  <GoogleOAuthProvider clientId={import.meta.env.VITE_APP_GOOGLE_CLIENT_ID}>
+                    <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError}/>
+                  </GoogleOAuthProvider>
+                </div>
               </div>
 
               {/* Divider */}
