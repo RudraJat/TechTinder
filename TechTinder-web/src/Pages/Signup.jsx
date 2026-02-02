@@ -126,7 +126,7 @@ function Signup() {
           <div className="relative order-2 lg:order-1">
             {/* Floating logo badge */}
             <div className="absolute -top-6 -left-9 w-20 h-20 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/50 transform rotate-12 hover:rotate-0 transition-transform duration-500">
-              <span className="text-white font-black text-3xl transform -rotate-12 hover:rotate-0 transition-transform duration-500">
+              <span className="text-white font-black text-3xl transform rotate-12 hover:rotate-0 transition-transform duration-500">
                 &lt;/&gt;
               </span>
             </div>
@@ -430,14 +430,14 @@ function Signup() {
                     <span className="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">
                       I agree to the{" "}
                       <a
-                        href="#"
+                        href="http://localhost:5173/terms"
                         className="text-purple-600 hover:text-purple-700 font-bold underline"
                       >
                         Terms of Service
                       </a>{" "}
                       and{" "}
                       <a
-                        href="#"
+                        href="http://localhost:5173/privacypolicy"
                         className="text-purple-600 hover:text-purple-700 font-bold underline"
                       >
                         Privacy Policy
