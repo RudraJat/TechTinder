@@ -81,17 +81,40 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
       excludedUserIds.add(req.fromUserId.toString());//By this we ensure that both fromUserId and toUserId are excluded
       excludedUserIds.add(req.toUserId.toString());
     });
+    const excludeIdsParam = (req.query.excludeIds || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    excludeIdsParam.forEach((id) => excludedUserIds.add(id));
+    
 
+    // Get non-excluded users without skip since exclusion already filters seen users
+    // As users swipe, they're added to exclusion list, so we always get fresh users
     const feedUsers = await User.find({
       $and: [
         { _id: { $nin: Array.from(excludedUserIds) } }, //nin means not in- to exclude connected users and request sent/received users
         { _id: { $ne: loggedInUser._id } }, //$ne means not equal- to exclude logged in user
       ],
-    }).select(USER_SAFE_DATA).skip(skip).limit(limit); //pagination using skip and limit; 
-
+    })
+    .select(USER_SAFE_DATA)
+    .limit(limit); // Only use limit, no skip - exclusion filter handles "already seen"
+    
     res.json({ data: feedUsers });
   } catch (err) {
     res.status(400).json({"error": "Error fetching feed " + err.message});
+  }
+});
+
+//api to get stats - count all active users
+userRouter.get("/stats", async (req, res) => {
+  try {
+    const activeDevs = await User.countDocuments();
+    res.json({
+      activeDevs: activeDevs,
+      message: "Stats fetched successfully"
+    });
+  } catch (err) {
+    res.status(400).json({"error": "Error fetching stats " + err.message});
   }
 });
 

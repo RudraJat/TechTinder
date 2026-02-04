@@ -43,6 +43,11 @@ const userSchema = new mongoose.Schema(
         unique: true,
         sparse: true
     },
+    linkedinId:{
+        type: String,
+        unique: true,
+        sparse:true//Multiple users can exist without linkedinId, Users with linkedinId must be unique 
+    },
     photoUrl: {
         type: String,
         validate(value){
@@ -92,7 +97,7 @@ const userSchema = new mongoose.Schema(
 userSchema.methods.getJWT = async function(){
     const user = this;
 
-    const token = await jwt.sign({ _id: user._id }, "RudraSecretKey", {
+    const token = await jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
     return token;

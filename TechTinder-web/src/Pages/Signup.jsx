@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import {
@@ -13,8 +14,9 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import GoogleIcon from "../Components/GoogleIcon";
+
 function Signup() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -23,16 +25,14 @@ function Signup() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "developer",
+    role: "Other",
     agreeToTerms: false,
   });
 
   const [isHovered, setIsHovered] = useState(false);
   const [error, setError] = useState("");
 
-  // Log Google Client ID to verify it's loaded
-  // console.log("GOOGLE CLIENT ID:", import.meta.env.VITE_APP_GOOGLE_CLIENT_ID);
-
+  
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -41,6 +41,9 @@ function Signup() {
     }));
     setError(""); // Clear error when user starts typing
   };
+  
+  // Log Google Client ID to verify it's loaded
+  // console.log("GOOGLE CLIENT ID:", import.meta.env.VITE_APP_GOOGLE_CLIENT_ID);
 
   // Google SSO Integration
   const handleGoogleSuccess = async (authResponse) => {
@@ -51,8 +54,7 @@ function Signup() {
         { withCredentials: true },
       );
       alert("Welcome to TECHTINDER! 🎉 Your Google account is now connected!");
-      // Optionally redirect or update app state
-      console.log("User data:", res.data);
+      navigate('/home'); // Redirect to home after successful signup
     } catch (error) {
       console.log("Google signup error:", error);
       const errorMessage =
@@ -68,6 +70,12 @@ function Signup() {
     setError("Google Sign In was unsuccessful. Please try again later.");
     alert("Google Sign In was unsuccessful. Please try again later.");
   };
+
+  //LinkedIN SSO integration
+  const handleLinkedInLogin=()=>{
+    window.location.href = "http://localhost:1111/linkedin";
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,18 +94,11 @@ function Signup() {
         email: formData.email,
         password: formData.password,
         role: formData.role,
+      }, {
+        withCredentials: true
       });
       alert("Welcome to TECHTINDER! 🎉 Your developer journey begins now!");
-      // Reset form after successful signup
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        role: "developer",
-        agreeToTerms: false,
-      });
+      navigate('/home'); // Redirect to home after successful signup
     } catch (error) {
       console.log("Error: " + error);
       const errorMessage =
@@ -214,13 +215,13 @@ function Signup() {
               {/* Header */}
               <div className="mb-3 text-center">
                 <h2 className="text-4xl font-black text-slate-900 mb-2">
-                  Create Account 🚀
+                  Create Account 
                 </h2>
               </div>
 
               {/* Social Signup */}
               <div className="grid grid-cols-2 gap-3 mb-3">
-                <button className="group flex items-center justify-center gap-2 hover:bg-blue-600 border-2 hover:border-blue-600 rounded-md p-2 transition-all duration-300">
+                <button onClick={handleLinkedInLogin} className="group flex items-center justify-center gap-2 hover:bg-blue-600 border-2 hover:border-blue-600 rounded-md p-2 transition-all duration-300">
                   <Linkedin className="w-5 h-5 text-slate-700 group-hover:text-white transition-colors" />
                 </button>
 
@@ -333,14 +334,14 @@ function Signup() {
                     className="w-full px-4 py-2 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white transition-all duration-300 font-medium cursor-pointer"
                     required
                   >
-                    <option value="developer">Frontend Developer</option>
-                    <option value="backend">Backend Developer</option>
-                    <option value="fullstack">Full Stack Developer</option>
-                    <option value="mobile">Mobile Developer</option>
-                    <option value="devops">DevOps Engineer</option>
-                    <option value="designer">UI/UX Designer</option>
-                    <option value="student">Student/Learning</option>
-                    <option value="other">Other</option>
+                    <option value="Frontend Developer">Frontend Developer</option>
+                    <option value="Backend Developer">Backend Developer</option>
+                    <option value="Fullstack Developer">Full Stack Developer</option>
+                    <option value="Mobile Developer">Mobile Developer</option>
+                    <option value="DevOps Engineer">DevOps Engineer</option>
+                    <option value="Designer">UI/UX Designer</option>
+                    <option value="Student">Student/Learning</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
 
@@ -453,7 +454,7 @@ function Signup() {
                   onMouseLeave={() => setIsHovered(false)}
                   className="w-full bg-gradient-to-r from-cyan-500 via-purple-600 to-fuchsia-600 hover:from-cyan-400 hover:via-purple-500 hover:to-fuchsia-500 text-white font-black py-1.5 rounded-xl shadow-lg hover:shadow-2xl hover:shadow-purple-500/50 transform hover:-translate-y-1 transition-all duration-300 text-lg uppercase tracking-wider"
                 >
-                  {isHovered ? "🎉 Join Now" : "Create Account"}
+                  {isHovered ? "Join Now" : "Create Account"}
                 </button>
               </form>
 

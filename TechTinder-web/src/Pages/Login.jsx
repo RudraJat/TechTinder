@@ -1,10 +1,12 @@
-import{ useState } from 'react';
+import{ useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Linkedin, Chrome, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import {GoogleOAuthProvider, GoogleLogin} from "@react-oauth/google";
-import GoogleIcon from "../Components/GoogleIcon";
+
 
 function Login() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,34 +18,90 @@ function Login() {
       const res=await axios.post("http://localhost:1111/login",{
         email,
         password,
+      }, {
+        withCredentials: true
       });
+      alert('Welcome to TECHTINDER! 🎉');
+      navigate('/home'); // Redirect to home after successful login
     }catch(error){
       console.log("Errro: "+error);
+      alert('Login failed. Please check your credentials.');
     }
-    alert('Welcome to TECHTINDER! 🎉');
   };
 
-  //google SSO Integration
+  //dynamic total user count can be fetched from backend
+  const [stats, setStats] = useState({
+    activeDevs: 0,
+    loading: true,
+    error: null
+  });
 
-  
+  // Fetch real-time stats from your backend
+  useEffect(() => {
+    fetchStats();
+    
+    // Optional: Set up polling to refresh stats every 30 seconds
+    const interval = setInterval(fetchStats, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('http://localhost:1111/stats', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch stats');
+      }
+
+      const data = await response.json();
+      
+      setStats({
+        activeDevs: data.activeDevs || 0,
+        loading: false,
+        error: null
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      setStats(prev => ({
+        ...prev,
+        loading: false,
+        error: error.message
+      }));
+    }
+  };
+
+
+  //google SSO Integration  
   const handleGoogleSuccess = async(authResponse) =>{
     try{
-      const res = await axios.post("http://localhost:1111/auth/google-auth",{
-        idToken: authResponse.credential
+      const res = await axios.post("http://localhost:1111/google-login",{
+        credential: authResponse.credential
       },{
         withCredentials:true
       });
-      updateUserDetails(res.data.user);
+      alert('Welcome to TECHTINDER! 🎉');
+      navigate('/home'); // Redirect to home after successful Google login
     }catch(error){
       console.log(error);
-      setErrors({message: 'Error processing google auth, please try again'});
+      alert('Error processing google auth, please try again');
   }
   };
 
   const handleGoogleError = async(error)=>{
     console.log(error);
-    setErrors({message: 'Google Sign In was unsuccessful, try again later'});
+    alert('Google Sign In was unsuccessful, try again later');
   }
+
+  // Format numbers with commas
+  const formatNumber = (num) => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 flex items-center justify-center p-4 overflow-hidden relative">
@@ -76,14 +134,34 @@ function Login() {
               </div>
 
               {/* Stats */}
-              <div className="space-y-4 mb-8">
-                <div className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-2xl p-6 border border-cyan-500/20 backdrop-blur-sm group hover:border-cyan-400/40 transition-all duration-300">
+              <div className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-2xl p-6 border border-cyan-500/20 backdrop-blur-sm group hover:border-cyan-400/40 transition-all duration-300">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-slate-400 text-sm font-semibold uppercase tracking-wider text-center">Active Devs</span>
+                    <span className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Active Devs</span>
+                    {stats.loading ? (
+                      <span className="text-cyan-400 text-xs font-bold px-2 py-1 bg-cyan-500/20 rounded-full animate-pulse">
+                        Loading...
+                      </span>
+                    ) : stats.error ? (
+                      <span className="text-red-400 text-xs font-bold px-2 py-1 bg-red-500/20 rounded-full">
+                        Error
+                      </span>
+                    ) : (
+                      <span className="text-cyan-400 text-xs font-bold px-2 py-1 bg-cyan-500/20 rounded-full">
+                        Live
+                      </span>
+                    )}
                   </div>
-                  <div className="text-4xl font-black text-white">47,892</div>
+                  <div className="text-4xl font-black text-white">
+                    {stats.loading ? (
+                      <span className="animate-pulse">--,---</span>
+                    ) : stats.error ? (
+                      <span className="text-red-400">Error</span>
+                    ) : (
+                      formatNumber(stats.activeDevs)
+                    )}
+                  </div>
                 </div>
-              </div>
+
 
               {/* Feature highlights */}
               <div className="space-y-3">
@@ -118,10 +196,10 @@ function Login() {
             <div className="bg-white rounded-3xl p-10 shadow-2xl shadow-purple-900/50 transform hover:scale-[1.02] transition-all duration-500">
               {/* Welcome header */}
               <div className="mb-8">
-                <h2 className="text-4xl font-black text-slate-900 mb-2">
-                  Welcome Back 👋
+                <h2 className="text-4xl font-black text-slate-900 mb-2 text-center">
+                  Welcome Back 
                 </h2>
-                <p className="text-slate-600 text-lg">
+                <p className="text-slate-600 text-lg text-center">
                   Sign in to continue your journey
                 </p>
               </div>
@@ -218,7 +296,7 @@ function Login() {
                   onMouseLeave={() => setIsHovered(false)}
                   className="w-full bg-gradient-to-r from-cyan-500 via-purple-600 to-fuchsia-600 hover:from-cyan-400 hover:via-purple-500 hover:to-fuchsia-500 text-white font-black py-4 rounded-xl shadow-lg hover:shadow-2xl hover:shadow-purple-500/50 transform hover:-translate-y-1 transition-all duration-300 text-lg uppercase tracking-wider"
                 >
-                  {isHovered ? '🚀 Launch' : 'Sign In'}
+                  {isHovered ? 'Launch' : 'Sign In'}
                 </button>
               </form>
 

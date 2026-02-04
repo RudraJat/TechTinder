@@ -1,4 +1,5 @@
-require("dotenv").config({ path: "../../.env" });
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const express = require("express");
 const connectDB = require("./config/database.js");
 const cookieParser = require("cookie-parser");
@@ -12,9 +13,12 @@ const cors = require("cors");
 const app = express();
 
 //using CORS middleware to allow requests from frontend server
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
-  credentials: true
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 //using cookie parser middleware

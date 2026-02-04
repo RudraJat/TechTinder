@@ -8,7 +8,7 @@ const userAuth = async (req, res, next)=>{
         if(!token){
             throw new Error("No token found in cookies");
         }
-        const decodedMessage = await jwt.verify(token, "RudraSecretKey");
+        const decodedMessage = await jwt.verify(token, process.env.JWT_SECRET);
         const {_id}= decodedMessage;
         const user = await User.findById(_id);
         
