@@ -88,17 +88,29 @@ function Signup() {
       return;
     }
     try {
-      const res = await axios.post("http://localhost:1111/signup", {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        role: formData.role,
-      }, {
-        withCredentials: true
-      });
-      alert("Welcome to TECHTINDER! 🎉 Your developer journey begins now!");
-      navigate('/home'); // Redirect to home after successful signup
+      const res = await axios.post(
+        "http://localhost:1111/signup",
+        {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      // axios resolves only for 2xx responses; navigate on success
+      if (res && res.status >= 200 && res.status < 300) {
+        navigate("/onboarding");
+      } else {
+        const errMsg = res?.data?.error || "Signup failed. Please try again.";
+        alert(errMsg);
+      }
+      // alert("Welcome to TECHTINDER! 🎉 Your developer journey begins now!");
+      // navigate('/home'); // Redirect to home after successful signup
     } catch (error) {
       console.log("Error: " + error);
       const errorMessage =

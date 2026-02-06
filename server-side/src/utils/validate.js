@@ -26,6 +26,28 @@ const validateEditProfileData = (req) => {
   const isEditAllowd = Object.keys(req.body).every((fields) =>
     allowedData.includes(fields)
   );
+  
+  // Additional validation for role if present
+  if (req.body.role) {
+    const validRoles = ["Frontend Developer", "Backend Developer", "Fullstack Developer", "Mobile Developer", "DevOps Engineer", "Designer", "Student", "Other"];
+    
+    // Check if role is an array
+    if (!Array.isArray(req.body.role)) {
+      throw new Error("Role must be an array");
+    }
+    
+    // Check if array has 1-3 items
+    if (req.body.role.length < 1 || req.body.role.length > 3) {
+      throw new Error("You must select 1-3 roles");
+    }
+    
+    // Check if all roles are valid
+    const allValid = req.body.role.every(role => validRoles.includes(role));
+    if (!allValid) {
+      throw new Error("Invalid role(s) provided");
+    }
+  }
+  
   return isEditAllowd;
 };
 

@@ -15,14 +15,33 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try{
-      const res=await axios.post("http://localhost:1111/login",{
-        email,
-        password,
-      }, {
-        withCredentials: true
-      });
-      alert('Welcome to TECHTINDER! 🎉');
-      navigate('/home'); // Redirect to home after successful login
+      const res = await axios.post(
+        "http://localhost:1111/login",
+        { email, password },
+        { withCredentials: true },
+      );
+
+      // axios throws on non-2xx, so here it's a success
+      if (res && res.status >= 200 && res.status < 300) {
+        const profileRes = await fetch("http://localhost:1111/profile/view", {
+          credentials: "include",
+        });
+
+        const profileData = await profileRes.json();
+        const user = profileData.data;
+
+        // Check if profile is complete
+        const isComplete = !!(
+          user?.age &&
+          user?.gender &&
+          user?.bio &&
+          user.bio.length >= 20 &&
+          user?.role &&
+          user?.skills &&
+          user.skills.length > 0
+        );
+        navigate(isComplete ? "/home" : "/onboarding");
+      }
     }catch(error){
       console.log("Errro: "+error);
       alert('Login failed. Please check your credentials.');
@@ -166,8 +185,8 @@ function Login() {
               {/* Feature highlights */}
               <div className="space-y-3">
                 {[
-                  { icon: '➡️', text: 'Instant matching with skilled developers' },
-                  { icon: '➡️', text: 'Build projects together in real-time' }
+                  {  text: '🟣 Instant matching with skilled developers' },
+                  {  text: '🟣 Build projects together in real-time' }
                 ].map((feature, idx) => (
                   <div key={idx} className="flex items-center gap-3 text-slate-300 group hover:text-white transition-colors duration-300">
                     <span className="text-2xl group-hover:scale-125 transition-transform duration-300">{feature.icon}</span>
@@ -273,17 +292,8 @@ function Login() {
                   </div>
                 </div>
 
-                {/* Remember & Forgot */}
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      className="w-5 h-5 rounded border-2 border-slate-300 text-purple-600 focus:ring-2 focus:ring-purple-500 cursor-pointer"
-                    />
-                    <span className="text-sm font-semibold text-slate-600 group-hover:text-slate-900 transition-colors">
-                      Remember me
-                    </span>
-                  </label>
+                {/* Forgot Password */}
+                <div className="text-right">
                   <a href="#" className="text-sm font-bold text-purple-600 hover:text-purple-700 transition-colors">
                     Forgot Password?
                   </a>

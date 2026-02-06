@@ -54,7 +54,8 @@ const userSchema = new mongoose.Schema(
             if(!validator.isURL(value)){
                 throw new Error("Enter a valid URL for photo");
             }
-        }
+        },
+        default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnSSxXHLqu5lsHYkFlZkvXuo2ZamNvdqLiCg&s"
     },
     age: {
         type: Number,   
@@ -81,12 +82,22 @@ const userSchema = new mongoose.Schema(
         default: "This user prefers to keep an air of mystery about them.",
     },
     role: {
-        type: String,
-        enum: {
-            values: ["Frontend Developer", "Backend Developer", "Fullstack Developer", "Mobile Developer", "DevOps Engineer", "Designer", "Student", "Other"],
-            message: "{VALUE} is not a valid role"
+        type: [String],
+        validate: {
+            validator: function(value) {
+                const validRoles = ["Frontend Developer", "Backend Developer", "Fullstack Developer", "Mobile Developer", "DevOps Engineer", "Designer", "Student", "Other"];
+                // Check if all roles are valid
+                const allValid = value.every(role => validRoles.includes(role));
+                // Check if array has 1-3 items
+                return allValid && value.length >= 1 && value.length <= 3;
+            },
+            message: "Role must be an array of 1-3 valid roles"
         },
-        default: "Other"
+        default: []
+    },
+    skills: {
+        type: [String],
+        default: []
     }
     },
     {

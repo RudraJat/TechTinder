@@ -63,9 +63,7 @@ async function apiPost(path, body) {
   return r.json();
 }
 
-/* ══════════════════════════════════════════════
-   SUB-COMPONENTS
-   ══════════════════════════════════════════════ */
+/*SUB-COMPONENTS*/
 
 /* ── Avatar circle ─────────────────────────── */
 function Avatar({ user, size = "lg" }) {
@@ -110,7 +108,7 @@ function SkillPills({ skills = [] }) {
   );
 }
 
-/* ── Feed card (single swipeable profile) ───── */
+  /* ── Feed card (single swipeable profile) ───── */
 function FeedCard({
   user,
   swipeDir,
@@ -120,6 +118,9 @@ function FeedCard({
   onTouchStart,
   onTouchEnd,
 }) {
+  // Debug: log user data to see what's available
+  console.log("FeedCard user data:", user);
+  
   let translate = "translate-x-0 opacity-100";
   if (swipeDir === "right") translate = "translate-x-[110%] opacity-0";
   if (swipeDir === "left") translate = "-translate-x-[110%] opacity-0";
@@ -142,13 +143,23 @@ function FeedCard({
 
       {/* LIKE / PASS stamp */}
       {swipeDir === "right" && (
-        <div className="absolute top-8 left-5 z-20 border-[3px] border-emerald-400 rounded-lg px-3 py-0.5" style={{ transform: "rotate(-12deg)" }}>
-          <span className="text-emerald-400 text-2xl font-black drop-shadow-lg">LIKE</span>
+        <div
+          className="absolute top-8 left-5 z-20 border-[3px] border-emerald-400 rounded-lg px-3 py-0.5"
+          style={{ transform: "rotate(-12deg)" }}
+        >
+          <span className="text-emerald-400 text-2xl font-black drop-shadow-lg">
+            LIKE
+          </span>
         </div>
       )}
       {swipeDir === "left" && (
-        <div className="absolute top-8 right-5 z-20 border-[3px] border-rose-400 rounded-lg px-3 py-0.5" style={{ transform: "rotate(12deg)" }}>
-          <span className="text-rose-400 text-2xl font-black drop-shadow-lg">PASS</span>
+        <div
+          className="absolute top-8 right-5 z-20 border-[3px] border-rose-400 rounded-lg px-3 py-0.5"
+          style={{ transform: "rotate(12deg)" }}
+        >
+          <span className="text-rose-400 text-2xl font-black drop-shadow-lg">
+            PASS
+          </span>
         </div>
       )}
 
@@ -160,8 +171,17 @@ function FeedCard({
               {user.firstName} {user.lastName}
             </h2>
             <p className="text-slate-300 font-semibold text-sm mt-0.5">
-              {user.age} · {user.gender}
+              {user.age ? `${user.age} · ` : ""}{user.gender || ""}
             </p>
+            {user.role && user.role.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {user.role.map((r, i) => (
+                  <span key={i} className="text-[10px] font-bold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full">
+                    {r}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur border border-white/20 flex items-center justify-center">
             <Code2 className="w-5 h-5 text-cyan-400" />
@@ -306,9 +326,18 @@ function RequestsTab({ requests, onAccept, onReject }) {
                     {u.firstName} {u.lastName}
                   </h3>
                   <span className="text-xs text-slate-500 font-semibold">
-                    {u.age} · {u.gender}
+                    {u.age ? `${u.age} · ` : ""}{u.gender || ""}
                   </span>
                 </div>
+                {u.role && u.role.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {u.role.map((r, i) => (
+                      <span key={i} className="text-[10px] font-bold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full">
+                        {r}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <p className="text-slate-400 text-xs mt-0.5 leading-relaxed line-clamp-2">
                   {u.bio}
                 </p>
@@ -404,8 +433,17 @@ function ConnectionsTab({ connections }) {
                   {c.firstName} {c.lastName}
                 </h3>
                 <p className="text-slate-500 text-xs">
-                  {c.age} · {c.gender}
+                  {c.age ? `${c.age} · ` : ""}{c.gender || ""}
                 </p>
+                {c.role && c.role.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-0.5">
+                    {c.role.map((r, i) => (
+                      <span key={i} className="text-[10px] font-bold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full">
+                        {r}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               {open ? (
                 <ChevronUp className="w-4 h-4 text-slate-500" />
@@ -436,7 +474,7 @@ function ConnectionsTab({ connections }) {
 /* ══════════════════════════════════════════════
    ROOT PAGE
    ══════════════════════════════════════════════ */
-function TechTinderHome() {
+function TechTinderHome({ onLogout }) {
   const navigate = useNavigate();
   const [tab, setTab] = useState("feed");
   const [feed, setFeed] = useState([]);
@@ -453,7 +491,7 @@ function TechTinderHome() {
   const isDragging = useRef(false);
   const [dragX, setDragX] = useState(0); // live pixel offset while dragging
   const [isSnapping, setIsSnapping] = useState(false); // true while the snap-back animation runs
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -477,7 +515,7 @@ function TechTinderHome() {
         setRequests(reqRes.data || []);
         setConns(connRes.data || []);
         setActiveDevs(statsRes.activeDevs || 0);
-        
+
         // Only assume no more users if we got 0 users on first page
         if (!feedRes.data || feedRes.data.length === 0) {
           setHasMoreUsers(false);
@@ -489,7 +527,7 @@ function TechTinderHome() {
       }
     })();
   }, []);
-  
+
   /* ── Auto-load more users when running low ── */
   useEffect(() => {
     // Only proceed if we have feed data and haven't reached the end
@@ -498,24 +536,29 @@ function TechTinderHome() {
     }
 
     const remainingProfiles = feed.length - currentIdx;
-    
+
     // Trigger load when only 1 profile remains
     if (remainingProfiles <= 1) {
       loadingRef.current = true;
       setIsLoadingMore(true);
-      
+
       (async () => {
         try {
           const nextPage = currentPage + 1;
-          const remainingIds = feed.slice(currentIdx).map((u) => u?._id).filter(Boolean);
+          const remainingIds = feed
+            .slice(currentIdx)
+            .map((u) => u?._id)
+            .filter(Boolean);
           const excludeSet = new Set([...seenIdsRef.current, ...remainingIds]);
           const excludeIds = Array.from(excludeSet).join(",");
-          const feedRes = await api(`/user/feed?page=${nextPage}&limit=10&excludeIds=${encodeURIComponent(excludeIds)}`);
-          
+          const feedRes = await api(
+            `/user/feed?page=${nextPage}&limit=10&excludeIds=${encodeURIComponent(excludeIds)}`,
+          );
+
           if (feedRes.data && feedRes.data.length > 0) {
-            setFeed(prevFeed => [...prevFeed, ...feedRes.data]);
+            setFeed((prevFeed) => [...prevFeed, ...feedRes.data]);
             setCurrentPage(nextPage);
-            
+
             // Only stop if we get 0 users (no more available)
             // Even if less than 10, there might be more on next page
           } else {
@@ -557,9 +600,9 @@ function TechTinderHome() {
   }, [feed, currentIdx, triggerSwipe]);
 
   /* touch handlers (mobile) */
- const onTouchStart = (e) => {
+  const onTouchStart = (e) => {
     mouseStartX.current = e.touches[0].clientX;
-    isDragging.current  = true;
+    isDragging.current = true;
   };
 
   const onTouchMove = (e) => {
@@ -574,17 +617,22 @@ function TechTinderHome() {
 
     if (diff > 60) {
       setDragX(window.innerWidth);
-      setTimeout(() => { setDragX(0); handleLike(); }, 350);
+      setTimeout(() => {
+        setDragX(0);
+        handleLike();
+      }, 350);
     } else if (diff < -60) {
       setDragX(-window.innerWidth);
-      setTimeout(() => { setDragX(0); handlePass(); }, 350);
+      setTimeout(() => {
+        setDragX(0);
+        handlePass();
+      }, 350);
     } else {
       setIsSnapping(true);
       setDragX(0);
       setTimeout(() => setIsSnapping(false), 300);
     }
   };
-
 
   /* mouse handlers (desktop) */
 
@@ -696,17 +744,25 @@ function TechTinderHome() {
 
   /* ── main render ── */
   return (
-   <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 text-white flex flex-col relative overflow-hidden" style={{ maxWidth: 480, margin: "0 auto" }}>
-      
+    <div
+      className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 text-white flex flex-col relative overflow-hidden"
+      style={{ maxWidth: 480, margin: "0 auto" }}
+    >
       {/* ═══ Animated background blobs ═══ */}
-      <div className="fixed inset-0 overflow-hidden opacity-30 pointer-events-none" style={{ zIndex: 0 }}>
+      <div
+        className="fixed inset-0 overflow-hidden opacity-30 pointer-events-none"
+        style={{ zIndex: 0 }}
+      >
         <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
         <div className="absolute top-40 right-10 w-72 h-72 bg-fuchsia-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
         <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
       </div>
 
       {/* ═══ Grid pattern overlay ═══ */}
-      <div className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAzIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40 pointer-events-none" style={{ zIndex: 0 }}></div>
+      <div
+        className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAzIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40 pointer-events-none"
+        style={{ zIndex: 0 }}
+      ></div>
 
       {/* ═══ HEADER ═══ */}
       <header className="sticky top-0 z-30 bg-slate-950/85 backdrop-blur-2xl border-b border-white/[0.08] px-4 pt-2 pb-2">
@@ -721,9 +777,8 @@ function TechTinderHome() {
             </span>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={onLogout || handleLogout}
             className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center hover:bg-rose-500/15 hover:border-rose-500/30 transition-all"
-            title="Logout"
           >
             <LogOut className="w-4 h-4 text-slate-400" />
           </button>
@@ -798,7 +853,7 @@ function TechTinderHome() {
 
       {/* iOS safe area */}
       <div className="h-6" />
-        <style>{`
+      <style>{`
         @keyframes blob {
           0%, 100% { transform: translate(0px, 0px) scale(1); }
           33%      { transform: translate(30px, -50px) scale(1.1); }

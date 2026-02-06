@@ -5,7 +5,7 @@ const ConnectionRequest = require("../model/connectionRequest");
 const { connection } = require("mongoose");
 const User = require("../model/userSchema");
 
-const USER_SAFE_DATA = "firstName lastName photoUrl age gender bio skills";
+const USER_SAFE_DATA = "firstName lastName photoUrl age gender bio skills role";
 
 //api to get pending connection requests for logged in user
 userRouter.get("/user/request/received", userAuth, async (req, res) => {
@@ -94,6 +94,7 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
       $and: [
         { _id: { $nin: Array.from(excludedUserIds) } }, //nin means not in- to exclude connected users and request sent/received users
         { _id: { $ne: loggedInUser._id } }, //$ne means not equal- to exclude logged in user
+        
       ],
     })
     .select(USER_SAFE_DATA)
