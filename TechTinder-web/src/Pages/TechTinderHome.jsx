@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronUp,
   MessageCircle,
+  User,
 } from "lucide-react";
 
 /* ──────────────────────────────────────────────
@@ -118,9 +119,6 @@ function FeedCard({
   onTouchStart,
   onTouchEnd,
 }) {
-  // Debug: log user data to see what's available
-  console.log("FeedCard user data:", user);
-  
   let translate = "translate-x-0 opacity-100";
   if (swipeDir === "right") translate = "translate-x-[110%] opacity-0";
   if (swipeDir === "left") translate = "-translate-x-[110%] opacity-0";
@@ -712,7 +710,7 @@ function TechTinderHome({ onLogout }) {
     }
     try {
       await apiPost("/logout", {});
-      navigate("/login");
+      navigate("/");
     } catch (err) {
       console.error("Error logging out:", err);
       alert("Logout failed. Please try again.");
@@ -776,12 +774,24 @@ function TechTinderHome({ onLogout }) {
               TECHTINDER
             </span>
           </div>
-          <button
-            onClick={onLogout || handleLogout}
-            className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center hover:bg-rose-500/15 hover:border-rose-500/30 transition-all"
-          >
-            <LogOut className="w-4 h-4 text-slate-400" />
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Profile button */}
+            <button
+              onClick={() => navigate("/profile")}
+              className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center hover:bg-purple-500/15 hover:border-purple-500/30 transition-all"
+            >
+              <User className="w-4 h-4 text-slate-400" />
+            </button>
+
+            {/* Logout button */}
+            <button
+              onClick={onLogout || handleLogout}
+              className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center hover:bg-rose-500/15 hover:border-rose-500/30 transition-all"
+            >
+              <LogOut className="w-4 h-4 text-slate-400" />
+            </button>
+          </div>
+          
         </div>
 
         {/* live stat */}

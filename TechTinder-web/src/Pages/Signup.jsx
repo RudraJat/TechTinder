@@ -30,7 +30,12 @@ function Signup() {
   });
 
   const [isHovered, setIsHovered] = useState(false);
-  const [error, setError] = useState("");
+  const [msg, setMsg] = useState(null);
+
+  const showMsg = (type, text) => {
+    setMsg({ type, text });
+    setTimeout(() => setMsg(null), 6000);
+  };
 
   
   const handleChange = (e) => {
@@ -39,7 +44,7 @@ function Signup() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
-    setError(""); // Clear error when user starts typing
+    setMsg(null); // Clear message when user starts typing
   };
   
   // Log Google Client ID to verify it's loaded
@@ -53,22 +58,20 @@ function Signup() {
         { credential: authResponse.credential },
         { withCredentials: true },
       );
-      alert("Welcome to TECHTINDER! 🎉 Your Google account is now connected!");
-      navigate('/home'); // Redirect to home after successful signup
+      showMsg("success", "Welcome to TECHTINDER! Your Google account is now connected.");
+      setTimeout(() => navigate('/home'), 800); // Redirect to home after successful signup
     } catch (error) {
       console.log("Google signup error:", error);
       const errorMessage =
         error.response?.data?.error ||
         "Google signup failed. Please try again.";
-      setError(errorMessage);
-      alert(errorMessage);
+      showMsg("error", errorMessage);
     }
   };
 
   const handleGoogleError = (error) => {
     console.log("Google auth error:", error);
-    setError("Google Sign In was unsuccessful. Please try again later.");
-    alert("Google Sign In was unsuccessful. Please try again later.");
+    showMsg("error", "Google Sign In was unsuccessful. Please try again later.");
   };
 
   //LinkedIN SSO integration
@@ -80,11 +83,11 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      showMsg("error", "Passwords do not match.");
       return;
     }
     if (!formData.agreeToTerms) {
-      alert("Please agree to the terms and conditions");
+      showMsg("error", "Please agree to the terms and conditions.");
       return;
     }
     try {
@@ -107,7 +110,7 @@ function Signup() {
         navigate("/onboarding");
       } else {
         const errMsg = res?.data?.error || "Signup failed. Please try again.";
-        alert(errMsg);
+        showMsg("error", errMsg);
       }
       // alert("Welcome to TECHTINDER! 🎉 Your developer journey begins now!");
       // navigate('/home'); // Redirect to home after successful signup
@@ -116,8 +119,7 @@ function Signup() {
       const errorMessage =
         error.response?.data?.error ||
         "Signup failed. Please check your details and try again.";
-      setError(errorMessage);
-      alert(errorMessage);
+      showMsg("error", errorMessage);
     }
   };
 
@@ -231,6 +233,23 @@ function Signup() {
                 </h2>
               </div>
 
+              {msg && (
+                <div
+                  className={`mb-6 px-5 py-3 rounded-xl border text-sm font-semibold flex items-center gap-2 ${
+                    msg.type === "success"
+                      ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-500"
+                      : "bg-rose-500/10 border-rose-500/25 text-rose-500"
+                  }`}
+                >
+                  {msg.type === "success" ? (
+                    <CheckCircle2 className="w-4 h-4" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4" />
+                  )}
+                  {msg.text}
+                </div>
+              )}
+
               {/* Social Signup */}
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <button onClick={handleLinkedInLogin} className="group flex items-center justify-center gap-2 hover:bg-blue-600 border-2 hover:border-blue-600 rounded-md p-2 transition-all duration-300">
@@ -257,19 +276,6 @@ function Signup() {
 
               {/* Signup Form */}
               <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Error Alert */}
-                {error && (
-                  <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-red-800 font-semibold text-sm">
-                        Signup Error
-                      </p>
-                      <p className="text-red-700 text-sm mt-1">{error}</p>
-                    </div>
-                  </div>
-                )}
-
                 {/* First Name & Last Name in a row */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>

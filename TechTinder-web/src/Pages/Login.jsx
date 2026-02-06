@@ -1,6 +1,6 @@
 import{ useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Linkedin, Chrome, Eye, EyeOff } from 'lucide-react';
+import { Linkedin, Chrome, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import {GoogleOAuthProvider, GoogleLogin} from "@react-oauth/google";
 
@@ -11,6 +11,12 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isHovered, setIsHovered] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  const showMsg = (type, text) => {
+    setMsg({ type, text });
+    setTimeout(() => setMsg(null), 6000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,7 +50,7 @@ function Login() {
       }
     }catch(error){
       console.log("Errro: "+error);
-      alert('Login failed. Please check your credentials.');
+      showMsg("error", "Login failed. Please check your credentials.");
     }
   };
 
@@ -104,17 +110,17 @@ function Login() {
       },{
         withCredentials:true
       });
-      alert('Welcome to TECHTINDER! 🎉');
-      navigate('/home'); // Redirect to home after successful Google login
+      showMsg("success", "Welcome to TECHTINDER! Login successful.");
+      setTimeout(() => navigate('/home'), 800); // Redirect to home after successful Google login
     }catch(error){
       console.log(error);
-      alert('Error processing google auth, please try again');
+      showMsg("error", "Error processing google auth, please try again.");
   }
   };
 
   const handleGoogleError = async(error)=>{
     console.log(error);
-    alert('Google Sign In was unsuccessful, try again later');
+    showMsg("error", "Google Sign In was unsuccessful, try again later.");
   }
 
   // Format numbers with commas
@@ -222,6 +228,23 @@ function Login() {
                   Sign in to continue your journey
                 </p>
               </div>
+
+              {msg && (
+                <div
+                  className={`mb-6 px-5 py-3 rounded-xl border text-sm font-semibold flex items-center gap-2 ${
+                    msg.type === "success"
+                      ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-500"
+                      : "bg-rose-500/10 border-rose-500/25 text-rose-500"
+                  }`}
+                >
+                  {msg.type === "success" ? (
+                    <CheckCircle2 className="w-4 h-4" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4" />
+                  )}
+                  {msg.text}
+                </div>
+              )}
 
               {/* Social Login */}
               <div className="grid grid-cols-2 gap-3 mb-8">
