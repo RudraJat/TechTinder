@@ -1,23 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Code2, ArrowRight, User, Briefcase, Image, FileText, Tag } from "lucide-react";
+import { ArrowRight, User, Briefcase, Image, FileText, Tag } from "lucide-react";
+import LoadingScreen from "../Components/LoadingScreen";
 
-/* ──────────────────────────────────────────────
-   CONFIG
-   ────────────────────────────────────────────── */
-const BASE_URL = "http://localhost:1111"; // ← change to your backend
-
-/* ──────────────────────────────────────────────
-   HELPER: generate gradient from name
-   ────────────────────────────────────────────── */
-const GRADS = [
-  "from-cyan-400 to-blue-500",
-  "from-purple-500 to-fuchsia-500",
-  "from-rose-400 to-pink-500",
-  "from-amber-400 to-orange-500",
-  "from-emerald-400 to-teal-500",
-];
-const gradOf = (s = "") => GRADS[s.charCodeAt(0) % GRADS.length];
+const BASE_URL = "http://localhost:1111";
 
 /* ══════════════════════════════════════════════
    MAIN COMPONENT
@@ -224,7 +210,7 @@ function ProfileOnboarding({ user = {}, onComplete }) {
         if (typeof onComplete === "function") {
           onComplete(data.data);
         } else {
-          navigate("/home", { replace: true });
+          navigate("/feed", { replace: true });
         }
       } catch (e) {
         setSaving(false);
@@ -239,84 +225,61 @@ function ProfileOnboarding({ user = {}, onComplete }) {
 
   /* ── shared input class ── */
   const inputCls =
-    "w-full px-4 py-4 bg-white border-2 border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 text-base font-medium focus:outline-none focus:border-purple-500 transition-all";
+    "w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 transition-colors";
 
-  /* ── progress dots ── */
-  const totalSteps = 4; // 0 (welcome) + 3 data steps
+  /* ── progress ── */
+  const totalSteps = 4;
   const progressPercent = (step / (totalSteps - 1)) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 text-white flex items-center justify-center p-4 overflow-hidden relative">
+    <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-4">
       {/* Loading state */}
-      {loading && (
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center animate-pulse">
-            <Code2 className="w-8 h-8 text-white" />
-          </div>
-          <p className="text-slate-400 font-bold tracking-widest uppercase text-xs animate-pulse">
-            Loading your profile…
-          </p>
-        </div>
-      )}
+      {loading && <LoadingScreen />}
 
       {!loading && (
-        <>
-          {/* ═══ Animated background blobs ═══ */}
-          <div className="fixed inset-0 overflow-hidden opacity-30 pointer-events-none">
-            <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-            <div className="absolute top-40 right-10 w-72 h-72 bg-fuchsia-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-            <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
-          </div>
+        <div className="w-full max-w-xl">
+          <div className="bg-slate-800 rounded-lg shadow-lg overflow-hidden">
+            {/* Progress bar */}
+            <div className="h-1 bg-slate-700">
+              <div
+                className="h-full bg-purple-600 transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
 
-          {/* ═══ Grid pattern ═══ */}
-          <div className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAzIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40 pointer-events-none"></div>
-
-          {/* ═══ Main card ═══ */}
-          <div className="relative w-full max-w-xl z-10">
-            <div className="bg-white rounded-3xl shadow-2xl shadow-purple-900/50 overflow-hidden">
-              {/* Progress bar */}
-              <div className="h-1.5 bg-slate-200">
-                <div
-                  className="h-full bg-gradient-to-r from-cyan-500 via-purple-600 to-fuchsia-600 transition-all duration-500"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-
-              <div className="p-8 sm:p-12">
-            {/*STEP 0: WELCOME */}
-            {step === 0 && (
+            <div className="p-8">
+              {/*STEP 0: WELCOME */}
+              {step === 0 && (
               <div className="flex flex-col items-center text-center gap-6">
-                {/* avatar */}
-                <div className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${gradOf(userData.firstName)} flex items-center justify-center shadow-lg shadow-purple-500/30`}>
+                <div className="w-20 h-20 rounded-lg bg-purple-600 flex items-center justify-center">
                   {userData.photoUrl ? (
-                    <img src={userData.photoUrl} alt="" className="w-full h-full object-cover rounded-2xl" />
+                    <img src={userData.photoUrl} alt="" className="w-full h-full object-cover rounded-lg" />
                   ) : (
-                    <span className="text-5xl font-black text-white">{(userData.firstName || "?")[0]}</span>
+                    <span className="text-4xl font-bold text-white">{(userData.firstName || "?")[0]}</span>
                   )}
                 </div>
 
                 <div>
-                  <h1 className="text-4xl font-black text-slate-900 mb-2">
+                  <h1 className="text-3xl font-bold text-white mb-2">
                     Welcome, {userData.firstName}!
                   </h1>
-                  <p className="text-slate-600 text-lg">
-                    Let's set up your profile so you can start connecting with amazing developers.
+                  <p className="text-slate-400">
+                    Let's set up your profile so you can start connecting with developers.
                   </p>
                 </div>
 
-                {/* techtinder logo badge */}
-                <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
-                  <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-lg flex items-center justify-center">
-                    <Code2 className="w-4 h-4 text-white" />
+                <div className="flex items-center gap-2 px-4 py-2 bg-slate-700 rounded-lg">
+                  <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                    &lt;/&gt;
                   </div>
-                  <span className="text-sm font-black bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent">
+                  <span className="text-sm font-bold text-white">
                     TECHTINDER
                   </span>
                 </div>
 
                 <button
                   onClick={handleNext}
-                  className="w-full mt-4 py-4 bg-gradient-to-r from-cyan-500 via-purple-600 to-fuchsia-600 text-white font-black text-lg rounded-xl shadow-lg hover:shadow-2xl hover:shadow-purple-500/50 transition-all flex items-center justify-center gap-2"
+                  className="w-full mt-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   Get Started <ArrowRight className="w-5 h-5" />
                 </button>
@@ -327,18 +290,18 @@ function ProfileOnboarding({ user = {}, onComplete }) {
             {step === 1 && (
               <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center">
-                    <User className="w-6 h-6 text-white" />
+                  <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                    <User className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black text-slate-900">Basic Info</h2>
-                    <p className="text-slate-600 text-sm">Tell us a bit about yourself</p>
+                    <h2 className="text-2xl font-bold text-white">Basic Info</h2>
+                    <p className="text-slate-400 text-sm">Tell us a bit about yourself</p>
                   </div>
                 </div>
 
                 {/* Age */}
                 <div>
-                  <label className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     Your Age
                   </label>
                   <input
@@ -355,14 +318,14 @@ function ProfileOnboarding({ user = {}, onComplete }) {
 
                 {/* Gender */}
                 <div>
-                  <label className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     Gender
                   </label>
                   <select
                     name="gender"
                     value={form.gender}
                     onChange={handleChange}
-                    className={`${inputCls} cursor-pointer appearance-none`}
+                    className={`${inputCls} cursor-pointer`}
                   >
                     <option value="">Select your gender</option>
                     <option value="male">Male</option>
@@ -372,7 +335,7 @@ function ProfileOnboarding({ user = {}, onComplete }) {
                 </div>
 
                 {error && (
-                  <div className="px-4 py-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm font-semibold">
+                  <div className="px-4 py-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
                     {error}
                   </div>
                 )}
@@ -380,13 +343,13 @@ function ProfileOnboarding({ user = {}, onComplete }) {
                 <div className="flex gap-3 mt-2">
                   <button
                     onClick={handleBack}
-                    className="flex-1 py-3 bg-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-300 transition-all"
+                    className="flex-1 py-3 bg-slate-700 text-white font-semibold rounded-lg hover:bg-slate-600 transition-colors"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleNext}
-                    className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all"
+                    className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors"
                   >
                     Continue
                   </button>
@@ -398,19 +361,19 @@ function ProfileOnboarding({ user = {}, onComplete }) {
             {step === 2 && (
               <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-xl flex items-center justify-center">
-                    <Briefcase className="w-6 h-6 text-white" />
+                  <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                    <Briefcase className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black text-slate-900">What You Do</h2>
-                    <p className="text-slate-600 text-sm">Help others understand your expertise</p>
+                    <h2 className="text-2xl font-bold text-white">What You Do</h2>
+                    <p className="text-slate-400 text-sm">Help others understand your expertise</p>
                   </div>
                 </div>
 
                 {/* Role - Multiple Selection (max 3) */}
                 <div>
-                  <label className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
-                    Your Roles <span className="text-slate-500 font-normal normal-case text-xs">(select up to 3)</span>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Your Roles <span className="text-slate-400 text-xs">(select up to 3)</span>
                   </label>
                   <div className="space-y-2">
                     {[
@@ -423,22 +386,22 @@ function ProfileOnboarding({ user = {}, onComplete }) {
                       "Student",
                       "Other",
                     ].map((roleOption) => (
-                      <label key={roleOption} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors">
+                      <label key={roleOption} className="flex items-center gap-3 p-3 bg-slate-700 rounded-lg hover:bg-slate-600 cursor-pointer transition-colors">
                         <input
                           type="checkbox"
                           checked={form.role?.includes(roleOption) || false}
                           onChange={() => handleRoleToggle(roleOption)}
                           disabled={!form.role?.includes(roleOption) && form.role?.length >= 3}
-                          className="w-5 h-5 accent-purple-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-4 h-4 accent-purple-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         />
-                        <span className="text-sm font-semibold text-slate-900">{roleOption}</span>
+                        <span className="text-sm font-medium text-white">{roleOption}</span>
                       </label>
                     ))}
                   </div>
                   {form.role && form.role.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {form.role.map((r) => (
-                        <span key={r} className="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white text-xs font-bold rounded-full shadow-sm">
+                        <span key={r} className="px-3 py-1.5 bg-purple-600 text-white text-xs font-semibold rounded-full">
                           {r}
                         </span>
                       ))}
@@ -448,30 +411,30 @@ function ProfileOnboarding({ user = {}, onComplete }) {
 
                 {/* Photo URL (optional) */}
                 <div>
-                  <label className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
-                    Profile Photo URL <span className="text-slate-500 font-normal normal-case text-xs">(optional)</span>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Profile Photo URL <span className="text-slate-400 text-xs">(optional)</span>
                   </label>
                   <div className="relative">
-                    <Image className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
                       type="url"
                       name="photoUrl"
                       value={form.photoUrl}
                       onChange={handleChange}
                       placeholder="https://example.com/photo.jpg"
-                      className={`${inputCls} pl-12`}
+                      className={`${inputCls} pl-11`}
                     />
                   </div>
                   {form.photoUrl && (
-                    <div className="mt-3 flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                    <div className="mt-3 flex items-center gap-3 p-3 bg-slate-700 rounded-lg">
                       <img src={form.photoUrl} alt="preview" className="w-12 h-12 rounded-lg object-cover" onError={(e) => e.target.style.display = 'none'} />
-                      <span className="text-xs text-slate-600 font-semibold">Preview</span>
+                      <span className="text-xs text-slate-300">Preview</span>
                     </div>
                   )}
                 </div>
 
                 {error && (
-                  <div className="px-4 py-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm font-semibold">
+                  <div className="px-4 py-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
                     {error}
                   </div>
                 )}
@@ -479,13 +442,13 @@ function ProfileOnboarding({ user = {}, onComplete }) {
                 <div className="flex gap-3 mt-2">
                   <button
                     onClick={handleBack}
-                    className="flex-1 py-3 bg-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-300 transition-all"
+                    className="flex-1 py-3 bg-slate-700 text-white font-semibold rounded-lg hover:bg-slate-600 transition-colors"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleNext}
-                    className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all"
+                    className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors"
                   >
                     Continue
                   </button>
@@ -493,25 +456,23 @@ function ProfileOnboarding({ user = {}, onComplete }) {
               </div>
             )}
 
-            {/* ═══════════════════════════════════
-                STEP 3: BIO & SKILLS (final)
-                ═══════════════════════════════════ */}
+            {/* STEP 3: BIO & SKILLS (final) */}
             {step === 3 && (
               <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-12 h-12 bg-gradient-to-br from-fuchsia-500 to-pink-500 rounded-xl flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-white" />
+                  <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black text-slate-900">Tell Your Story</h2>
-                    <p className="text-slate-600 text-sm">Make a great first impression</p>
+                    <h2 className="text-2xl font-bold text-white">Tell Your Story</h2>
+                    <p className="text-slate-400 text-sm">Make a great first impression</p>
                   </div>
                 </div>
 
                 {/* Bio */}
                 <div>
-                  <label className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
-                    Bio <span className="text-slate-500 font-normal normal-case text-xs">(min 20 chars)</span>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Bio <span className="text-slate-400 text-xs">(min 20 chars)</span>
                   </label>
                   <textarea
                     name="bio"
@@ -522,18 +483,18 @@ function ProfileOnboarding({ user = {}, onComplete }) {
                     className={`${inputCls} resize-none`}
                     maxLength={500}
                   />
-                  <div className="text-right text-xs text-slate-500 mt-1 font-semibold">
+                  <div className="text-right text-xs text-slate-400 mt-1">
                     {form.bio.length} / 500
                   </div>
                 </div>
 
                 {/* Skills */}
                 <div>
-                  <label className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
-                    Skills <span className="text-slate-500 font-normal normal-case text-xs">(comma separated)</span>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Skills <span className="text-slate-400 text-xs">(comma separated)</span>
                   </label>
                   <div className="relative">
-                    <Tag className="absolute left-4 top-4 w-5 h-5 text-slate-400" />
+                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
                       name="skills"
                       value={skillsInput}
@@ -546,7 +507,7 @@ function ProfileOnboarding({ user = {}, onComplete }) {
                       }}
                       onKeyDown={handleSkillsKeyDown}
                       placeholder="Type skill and press Enter or comma..."
-                      className={`${inputCls} pl-12`}
+                      className={`${inputCls} pl-11`}
                     />
                   </div>
                   {form.skills.length > 0 && (
@@ -554,13 +515,13 @@ function ProfileOnboarding({ user = {}, onComplete }) {
                       {form.skills.map((s, i) => (
                         <span
                           key={i}
-                          className="px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-purple-600 text-white text-xs font-bold rounded-full shadow-sm flex items-center gap-2"
+                          className="px-3 py-1.5 bg-purple-600 text-white text-xs font-semibold rounded-full flex items-center gap-2"
                         >
                           {s}
                           <button
                             type="button"
                             onClick={() => handleRemoveSkill(s)}
-                            className="ml-1 hover:text-red-200 font-bold"
+                            className="hover:text-red-300 font-bold"
                           >
                             ×
                           </button>
@@ -571,7 +532,7 @@ function ProfileOnboarding({ user = {}, onComplete }) {
                 </div>
 
                 {error && (
-                  <div className="px-4 py-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm font-semibold">
+                  <div className="px-4 py-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
                     {error}
                   </div>
                 )}
@@ -580,14 +541,14 @@ function ProfileOnboarding({ user = {}, onComplete }) {
                   <button
                     onClick={handleBack}
                     disabled={saving}
-                    className="flex-1 py-3 bg-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 bg-slate-700 text-white font-semibold rounded-lg hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleNext}
                     disabled={saving}
-                    className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {saving ? (
                       <>
@@ -603,41 +564,28 @@ function ProfileOnboarding({ user = {}, onComplete }) {
                 </div>
               </div>
             )}
-              </div>
-            </div>
-
-            {/* Step indicator dots */}
-            <div className="flex justify-center gap-2 mt-6">
-              {[0, 1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className={`h-2 rounded-full transition-all ${
-                    i === step
-                      ? "w-8 bg-gradient-to-r from-cyan-400 to-purple-500"
-                      : i < step
-                        ? "w-2 bg-emerald-400"
-                        : "w-2 bg-white/30"
-                  }`}
-                />
-              ))}
-            </div>
           </div>
-        </>
-      )}
+        </div>
 
-      {/* animations */}
-      <style>{`
-        @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33%      { transform: translate(30px, -50px) scale(1.1); }
-          66%      { transform: translate(-20px, 20px) scale(0.9); }
-        }
-        .animate-blob { animation: blob 7s infinite; }
-        .animation-delay-2000 { animation-delay: 2s; }
-        .animation-delay-4000 { animation-delay: 4s; }
-      `}</style>
-    </div>
-  );
+        {/* Step indicator dots */}
+        <div className="flex justify-center gap-2 mt-6">
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className={`h-2 rounded-full transition-all ${
+                i === step
+                  ? "w-8 bg-purple-600"
+                  : i < step
+                    ? "w-2 bg-purple-400"
+                    : "w-2 bg-slate-700"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+);
 };
 
 export default ProfileOnboarding;

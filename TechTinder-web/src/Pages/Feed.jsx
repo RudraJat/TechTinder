@@ -15,6 +15,7 @@ import {
   MessageCircle,
   User,
 } from "lucide-react";
+import LoadingScreen from "../Components/LoadingScreen";
 
 /* ──────────────────────────────────────────────
    CONFIG  – point BASE_URL at your Express server
@@ -113,6 +114,8 @@ function SkillPills({ skills = [] }) {
 function FeedCard({
   user,
   swipeDir,
+  dragX,
+  isDragging,
   onMouseDown,
   onMouseUp,
   onMouseLeave,
@@ -123,6 +126,10 @@ function FeedCard({
   if (swipeDir === "right") translate = "translate-x-[110%] opacity-0";
   if (swipeDir === "left") translate = "-translate-x-[110%] opacity-0";
 
+  // Show stamps early when dragging past threshold
+  const showLike = swipeDir === "right" || (isDragging && dragX > 60);
+  const showPass = swipeDir === "left" || (isDragging && dragX < -60);
+
   return (
     <div
       onTouchStart={onTouchStart}
@@ -131,7 +138,7 @@ function FeedCard({
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseLeave}
       className={`relative w-full rounded-3xl overflow-hidden shadow-2xl shadow-purple-900/40 border border-white/10 bg-white/5 backdrop-blur-xl transform transition-all duration-350 ease-out cursor-grab active:cursor-grabbing select-none ${translate}`}
-      style={{ aspectRatio: "3/4", transitionDuration: "380ms" }}
+      style={{ aspectRatio: "3/4", transitionDuration: "800ms" }}
     >
       {/* photo / gradient bg */}
       <div className="absolute inset-0">
@@ -140,7 +147,7 @@ function FeedCard({
       </div>
 
       {/* LIKE / PASS stamp */}
-      {swipeDir === "right" && (
+      {showLike && (
         <div
           className="absolute top-8 left-5 z-20 border-[3px] border-emerald-400 rounded-lg px-3 py-0.5"
           style={{ transform: "rotate(-12deg)" }}
@@ -150,7 +157,7 @@ function FeedCard({
           </span>
         </div>
       )}
-      {swipeDir === "left" && (
+      {showPass && (
         <div
           className="absolute top-8 right-5 z-20 border-[3px] border-rose-400 rounded-lg px-3 py-0.5"
           style={{ transform: "rotate(12deg)" }}
@@ -216,6 +223,8 @@ function FeedTab({
   feed,
   currentIdx,
   swipeDir,
+  dragX,
+  isDragging,
   onLike,
   onPass,
   onTouchStart,
@@ -257,6 +266,8 @@ function FeedTab({
           <FeedCard
             user={feed[currentIdx]}
             swipeDir={swipeDir}
+            dragX={dragX}
+            isDragging={isDragging.current}
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
             onMouseDown={onMouseDown}
@@ -469,16 +480,15 @@ function ConnectionsTab({ connections }) {
   );
 }
 
-/* ══════════════════════════════════════════════
-   ROOT PAGE
-   ══════════════════════════════════════════════ */
-function TechTinderHome({ onLogout }) {
+// Root page component for the feed (home) page
+function Feed({ onLogout }) {
   const navigate = useNavigate();
   const [tab, setTab] = useState("feed");
   const [feed, setFeed] = useState([]);
   const [requests, setRequests] = useState([]);
   const [connections, setConns] = useState([]);
   const [activeDevs, setActiveDevs] = useState(0);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -501,11 +511,12 @@ function TechTinderHome({ onLogout }) {
   useEffect(() => {
     (async () => {
       try {
-        const [feedRes, reqRes, connRes, statsRes] = await Promise.all([
+        const [feedRes, reqRes, connRes, statsRes, profileRes] = await Promise.all([
           api("/user/feed?page=1&limit=10"),
           api("/user/request/received"),
           api("/user/connections"),
           api("/stats"),
+          api("/profile/view"),
         ]);
 
         // Handle all responses
@@ -513,6 +524,7 @@ function TechTinderHome({ onLogout }) {
         setRequests(reqRes.data || []);
         setConns(connRes.data || []);
         setActiveDevs(statsRes.activeDevs || 0);
+        setCurrentUser(profileRes.data || null);
 
         // Only assume no more users if we got 0 users on first page
         if (!feedRes.data || feedRes.data.length === 0) {
@@ -586,7 +598,7 @@ function TechTinderHome({ onLogout }) {
       setSwipeDir(null);
       setCurrentIdx((i) => i + 1);
       animating.current = false;
-    }, 400);
+    }, 850);
   }, []);
 
   const handleLike = useCallback(() => {
@@ -613,22 +625,22 @@ function TechTinderHome({ onLogout }) {
     isDragging.current = false;
     const diff = e.changedTouches[0].clientX - mouseStartX.current;
 
-    if (diff > 60) {
+    if (diff > 100) {
       setDragX(window.innerWidth);
       setTimeout(() => {
         setDragX(0);
         handleLike();
-      }, 350);
+      }, 800);
     } else if (diff < -60) {
       setDragX(-window.innerWidth);
       setTimeout(() => {
         setDragX(0);
         handlePass();
-      }, 350);
+      }, 800);
     } else {
       setIsSnapping(true);
       setDragX(0);
-      setTimeout(() => setIsSnapping(false), 300);
+      setTimeout(() => setIsSnapping(false), 800);
     }
   };
 
@@ -656,18 +668,18 @@ function TechTinderHome({ onLogout }) {
       setTimeout(() => {
         setDragX(0);
         handleLike();
-      }, 350);
+      }, 800);
     } else if (diff < -60) {
       setDragX(-window.innerWidth);
       setTimeout(() => {
         setDragX(0);
         handlePass();
-      }, 350);
+      }, 800);
     } else {
       // ── below threshold → snap back to center
       setIsSnapping(true);
       setDragX(0);
-      setTimeout(() => setIsSnapping(false), 300); // duration matches the CSS transition
+      setTimeout(() => setIsSnapping(false), 800); // duration matches the CSS transition
     }
   };
 
@@ -719,48 +731,15 @@ function TechTinderHome({ onLogout }) {
 
   /* ── loading screen ── */
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-5">
-        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center shadow-xl shadow-purple-500/40 animate-pulse">
-          <Code2 className="w-10 h-10 text-white" />
-        </div>
-        <p className="text-slate-600 font-bold tracking-widest uppercase text-xs animate-pulse">
-          Loading…
-        </p>
-        <div className="w-56 flex flex-col gap-3 mt-2">
-          {[75, 55, 85, 45].map((w, i) => (
-            <div
-              key={i}
-              className="h-2.5 bg-white/[0.06] rounded-full animate-pulse"
-              style={{ width: `${w}%` }}
-            />
-          ))}
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   /* ── main render ── */
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 text-white flex flex-col relative overflow-hidden"
+      className="min-h-screen bg-slate-800 text-white flex flex-col relative overflow-hidden"
       style={{ maxWidth: 480, margin: "0 auto" }}
     >
-      {/* ═══ Animated background blobs ═══ */}
-      <div
-        className="fixed inset-0 overflow-hidden opacity-30 pointer-events-none"
-        style={{ zIndex: 0 }}
-      >
-        <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-fuchsia-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
-      </div>
-
-      {/* ═══ Grid pattern overlay ═══ */}
-      <div
-        className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAzIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40 pointer-events-none"
-        style={{ zIndex: 0 }}
-      ></div>
 
       {/* ═══ HEADER ═══ */}
       <header className="sticky top-0 z-30 bg-slate-950/85 backdrop-blur-2xl border-b border-white/[0.08] px-4 pt-2 pb-2">
@@ -778,9 +757,13 @@ function TechTinderHome({ onLogout }) {
             {/* Profile button */}
             <button
               onClick={() => navigate("/profile")}
-              className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center hover:bg-purple-500/15 hover:border-purple-500/30 transition-all"
+              className="w-9 h-9 rounded-xl border border-white/10 overflow-hidden flex items-center justify-center hover:border-purple-500/30 transition-all"
             >
-              <User className="w-4 h-4 text-slate-400" />
+              {currentUser ? (
+                <Avatar user={currentUser} size="sm" />
+              ) : (
+                <User className="w-4 h-4 text-slate-400" />
+              )}
             </button>
 
             {/* Logout button */}
@@ -842,6 +825,8 @@ function TechTinderHome({ onLogout }) {
             feed={feed}
             currentIdx={currentIdx}
             swipeDir={swipeDir}
+            dragX={dragX}
+            isDragging={isDragging.current}
             onLike={handleLike}
             onPass={handlePass}
             onTouchStart={onTouchStart}
@@ -863,24 +848,8 @@ function TechTinderHome({ onLogout }) {
 
       {/* iOS safe area */}
       <div className="h-6" />
-      <style>{`
-        @keyframes blob {
-          0%, 100% { transform: translate(0px, 0px) scale(1); }
-          33%      { transform: translate(30px, -50px) scale(1.1); }
-          66%      { transform: translate(-20px, 20px) scale(0.9); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
     </div>
   );
 }
 
-export default TechTinderHome;
+export default Feed;

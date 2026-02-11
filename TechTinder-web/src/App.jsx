@@ -9,11 +9,11 @@ import {
 import { useEffect, useState } from "react";
 import Signup from "./Pages/Signup";
 import Login from "./Pages/Login";
-import OAuthSuccess from "./Components/LinkedInOauth";
+
 import LandingPage from "./Pages/LandingPage";
 import PrivacyPolicy from "./Pages/PrivacyPolicy";
 import TermsOfService from "./Pages/TermsOfService";
-import TechTinderHome from "./Pages/TechTinderHome";
+import Feed from "./Pages/Feed";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import ProfileOnboarding from "./Pages/ProfileOnboarding";
 import ProfilePage from "./Pages/ProfilePage";
@@ -110,16 +110,16 @@ const AuthGate = ({ children }) => {
 
     if (["/", "/signup", "/login"].includes(location.pathname)) {
       return (
-        <Navigate to={profileComplete ? "/home" : "/onboarding"} replace />
+        <Navigate to={profileComplete ? "/feed" : "/onboarding"} replace />
       );
     }
 
-    if (location.pathname === "/home" && !profileComplete) {
+    if (location.pathname === "/feed" && !profileComplete) {
       return <Navigate to="/onboarding" replace />;
     }
 
     if (location.pathname === "/onboarding" && profileComplete) {
-      return <Navigate to="/home" replace />;
+      return <Navigate to="/feed" replace />;
     }
   }
   return children;
@@ -153,7 +153,7 @@ function onboarding() {
   }, [navigate]);
 
   const handleComplete = (updateUser) => {
-    navigate("/home");
+    navigate("/feed");
   };
 
   if (loading) {
@@ -193,7 +193,7 @@ function HomePage() {
     navigate("/login");
   };
 
-  return <TechTinderHome onLogout={handleLogOut} />;
+  return <Feed onLogout={handleLogOut} />;
 }
 
 function App() {
@@ -206,7 +206,7 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/oauth-success" element={<OAuthSuccess />} />
+
             <Route path="/privacypolicy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
 
@@ -222,10 +222,10 @@ function App() {
 
             {/* Protected: Home (must be logged in, profile complete) */}
             <Route
-              path="/home"
+              path="/feed"
               element={
                 <ProtectedRoute>
-                  <TechTinderHome />
+                  <Feed />
                 </ProtectedRoute>
               }
             />

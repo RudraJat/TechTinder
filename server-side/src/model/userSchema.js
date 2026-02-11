@@ -43,11 +43,6 @@ const userSchema = new mongoose.Schema(
         unique: true,
         sparse: true
     },
-    linkedinId:{
-        type: String,
-        unique: true,
-        sparse:true//Multiple users can exist without linkedinId, Users with linkedinId must be unique 
-    },
     photoUrl: {
         type: String,
         validate(value){

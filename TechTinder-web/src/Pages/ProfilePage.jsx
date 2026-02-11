@@ -285,12 +285,12 @@ function ProfilePage() {
   /* ── loading screen ── */
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center animate-pulse">
+          <div className="w-16 h-16 rounded-2xl bg-purple-600 flex items-center justify-center">
             <User className="w-8 h-8 text-white" />
           </div>
-          <p className="text-slate-600 font-bold tracking-widest uppercase text-xs animate-pulse">
+          <p className="text-slate-400 font-bold uppercase text-xs">
             Loading Profile…
           </p>
         </div>
@@ -302,23 +302,14 @@ function ProfilePage() {
 
   /* ── main render ── */
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 text-white relative overflow-hidden">
-      {/* ═══ Animated background blobs ═══ */}
-      <div className="fixed inset-0 overflow-hidden opacity-30 pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-fuchsia-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
-      </div>
-
-      {/* ═══ Grid pattern ═══ */}
-      <div className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAzIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40 pointer-events-none"></div>
+    <div className="min-h-screen bg-slate-900 text-white relative overflow-hidden">
 
       {/* ═══ Main container ═══ */}
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
         {/* ── Header with back button ── */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate("/home")}
+            onClick={() => navigate("/feed")}
             className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -328,7 +319,7 @@ function ProfilePage() {
           {!editMode && (
             <button
               onClick={() => setEditMode(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-md transition-all"
             >
               <Edit3 className="w-4 h-4" />
               Edit Profile
@@ -353,11 +344,10 @@ function ProfilePage() {
         {/* ═══ Profile Card ═══ */}
         <div className="bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl shadow-black/20 overflow-hidden">
           {/* ── Avatar section ── */}
-          <div className="relative h-48 bg-gradient-to-br from-cyan-500/20 via-purple-500/20 to-fuchsia-500/20 flex items-center justify-center">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-50"></div>
+          <div className="relative h-48 bg-slate-800 flex items-center justify-center">
             
             <div className="relative">
-              <div className={`w-32 h-32 rounded-2xl bg-gradient-to-br ${gradOf(user.firstName)} flex items-center justify-center shadow-2xl shadow-purple-500/30`}>
+              <div className="w-32 h-32 rounded-2xl bg-purple-600 flex items-center justify-center shadow-lg">
                 {form.photoUrl ? (
                   <img src={form.photoUrl} alt="" className="w-full h-full object-cover rounded-2xl" />
                 ) : (
@@ -368,7 +358,7 @@ function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:scale-110 transition-transform"
+                  className="absolute -bottom-2 -right-2 w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:scale-110 transition-transform"
                   aria-label="Upload profile photo"
                 >
                   <Camera className="w-5 h-5 text-white" />
@@ -642,7 +632,7 @@ function ProfilePage() {
                 <button
                   onClick={handleSaveProfile}
                   disabled={saving}
-                  className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? (
                     <>
@@ -782,7 +772,7 @@ function ProfilePage() {
                 <button
                   onClick={handlePasswordChange}
                   disabled={saving}
-                  className="flex-1 py-3 bg-gradient-to-r from-rose-500 to-fuchsia-600 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm rounded-lg shadow-md transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving ? (
                     <>
