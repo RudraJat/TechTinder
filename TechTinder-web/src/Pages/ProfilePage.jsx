@@ -6,18 +6,8 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL = "http://localhost:1111";
-
-/* ──────────────────────────────────────────────
-   HELPER: gradient colors
-   ────────────────────────────────────────────── */
-const GRADS = [
-  "from-cyan-400 to-blue-500",
-  "from-purple-500 to-fuchsia-500",
-  "from-rose-400 to-pink-500",
-  "from-amber-400 to-orange-500",
-  "from-emerald-400 to-teal-500",
-];
-const gradOf = (s = "") => GRADS[s.charCodeAt(0) % GRADS.length];
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_API_KEY = import.meta.env.VITE_CLOUDINARY_API_KEY;
 
 const SKILL_BG = [
   "bg-cyan-500/15 text-cyan-300 border-cyan-500/25",
@@ -67,6 +57,7 @@ function ProfilePage() {
   /* ── feedback ── */
   const [msg, setMsg] = useState(null); // { type: "success"|"error", text }
   const [saving, setSaving] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   /* ── fetch user profile on mount ── */
@@ -108,23 +99,89 @@ function ProfilePage() {
     setTimeout(() => setMsg(null), 6000);
   };
 
-  const handlePhotoFileChange = (e) => {
+  const fetchUploadSignature = async () => {
+    const candidateUrls = [
+      `${BASE_URL}/upload/get-signature`,
+      `${BASE_URL}/get-signature`,
+    ];
+
+    let lastError = "Unable to get upload signature";
+
+    for (const url of candidateUrls) {
+      const res = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        lastError = text || `Signature request failed (${res.status})`;
+        continue;
+      }
+
+      const data = await res.json();
+      if (data?.signature && data?.timestamp) return data;
+      lastError = data?.message || lastError;
+    }
+
+    throw new Error(lastError);
+  };
+
+  const handlePhotoFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
+
+    if (!file.type?.startsWith("image/")) {
       showMsg("error", "Please select an image file.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setForm((prev) => ({ ...prev, photoUrl: reader.result }));
-    };
-    reader.onerror = () => {
-      showMsg("error", "Failed to read image file.");
-    };
-    reader.readAsDataURL(file);
-    e.target.value = "";
+    if (file.size > 5 * 1024 * 1024) {
+      showMsg("error", "Image must be 5MB or smaller.");
+      return;
+    }
+
+    setPhotoUploading(true);
+
+    try {
+      const signatureData = await fetchUploadSignature();
+      const cloudName = signatureData.cloudName || CLOUDINARY_CLOUD_NAME;
+      const apiKey = signatureData.apiKey || CLOUDINARY_API_KEY;
+      const folder = signatureData.folder || "profile-photo";
+
+      if (!cloudName || !apiKey) {
+        throw new Error("Missing Cloudinary config for upload");
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("timestamp", String(signatureData.timestamp));
+      formData.append("signature", signatureData.signature);
+      formData.append("api_key", apiKey);
+      formData.append("folder", folder);
+
+      const cloudinaryRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const cloudinaryData = await cloudinaryRes.json();
+
+      if (!cloudinaryRes.ok || !cloudinaryData?.secure_url) {
+        throw new Error(cloudinaryData?.error?.message || "Image upload failed");
+      }
+
+      setForm((prev) => ({ ...prev, photoUrl: cloudinaryData.secure_url }));
+      showMsg("success", "Profile photo uploaded.");
+    } catch (err) {
+      showMsg("error", err.message || "Photo upload failed.");
+    } finally {
+      setPhotoUploading(false);
+      e.target.value = "";
+    }
   };
 
   /* ── handle form input change ── */
@@ -358,6 +415,7 @@ function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={photoUploading}
                   className="absolute -bottom-2 -right-2 w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:scale-110 transition-transform"
                   aria-label="Upload profile photo"
                 >
@@ -365,6 +423,9 @@ function ProfilePage() {
                 </button>
               )}
             </div>
+            {editMode && photoUploading && (
+              <p className="absolute bottom-3 text-xs font-semibold text-slate-300">Uploading photo...</p>
+            )}
             <input
               ref={fileInputRef}
               type="file"
@@ -623,7 +684,7 @@ function ProfilePage() {
               <div className="flex gap-4 pt-4">
                 <button
                   onClick={handleCancelEdit}
-                  disabled={saving}
+                  disabled={saving || photoUploading}
                   className="flex-1 py-3 bg-white/[0.06] border border-white/10 text-slate-300 font-bold rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <X className="w-4 h-4" />
@@ -631,7 +692,7 @@ function ProfilePage() {
                 </button>
                 <button
                   onClick={handleSaveProfile}
-                  disabled={saving}
+                  disabled={saving || photoUploading}
                   className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? (

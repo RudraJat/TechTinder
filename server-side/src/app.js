@@ -7,6 +7,7 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
+const uploadRouter = require("./routes/upload.routes");
 const cors = require("cors");
 
 //creating an express app
@@ -30,25 +31,7 @@ app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
-
-//creating api for metadata
-// app.post("/signup", async(req, res)=>{
-//     const users = new User({
-//         firstName: "Rudra",
-//         lastName: "Pratap Singh",
-//         email: "rudra@example.com",
-//         password: "password123",
-//     });
-
-//     try{
-//         await users.save();
-//         res.send("User signed up successfully!");
-//     }catch(err){
-//         res.status(201).send("Error signing up user."+err.message);
-//     }
-// });
-
-//parsing json data from request bodY
+app.use("/upload", uploadRouter);
 
 connectDB()
   .then(() => {

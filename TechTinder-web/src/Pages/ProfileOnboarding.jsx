@@ -4,6 +4,8 @@ import { ArrowRight, User, Briefcase, Image, FileText, Tag } from "lucide-react"
 import LoadingScreen from "../Components/LoadingScreen";
 
 const BASE_URL = "http://localhost:1111";
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_API_KEY = import.meta.env.VITE_CLOUDINARY_API_KEY;
 
 /* ══════════════════════════════════════════════
    MAIN COMPONENT
@@ -61,6 +63,7 @@ function ProfileOnboarding({ user = {}, onComplete }) {
   /* ── feedback ── */
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   // Only initialize form once when component mounts or user prop changes
   useEffect(() => {
@@ -111,6 +114,92 @@ function ProfileOnboarding({ user = {}, onComplete }) {
       ...prev,
       skills: prev.skills.filter((s) => s !== skillToRemove),
     }));
+  };
+
+  const fetchUploadSignature = async () => {
+    const candidateUrls = [
+      `${BASE_URL}/upload/get-signature`,
+      `${BASE_URL}/get-signature`,
+    ];
+
+    let lastError = "Unable to get upload signature";
+
+    for (const url of candidateUrls) {
+      const res = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        lastError = text || `Signature request failed (${res.status})`;
+        continue;
+      }
+
+      const data = await res.json();
+      if (data?.signature && data?.timestamp) return data;
+      lastError = data?.message || lastError;
+    }
+
+    throw new Error(lastError);
+  };
+
+  const handlePhotoFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type?.startsWith("image/")) {
+      setError("Please choose an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be 5MB or smaller");
+      return;
+    }
+
+    setPhotoUploading(true);
+    setError(null);
+
+    try {
+      const signatureData = await fetchUploadSignature();
+
+      const cloudName = signatureData.cloudName || CLOUDINARY_CLOUD_NAME;
+      const apiKey = signatureData.apiKey || CLOUDINARY_API_KEY;
+      const folder = signatureData.folder || "profile-photo";
+
+      if (!cloudName || !apiKey) {
+        throw new Error("Missing Cloudinary config for upload");
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("timestamp", String(signatureData.timestamp));
+      formData.append("signature", signatureData.signature);
+      formData.append("api_key", apiKey);
+      formData.append("folder", folder);
+
+      const cloudinaryRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const cloudinaryData = await cloudinaryRes.json();
+
+      if (!cloudinaryRes.ok || !cloudinaryData?.secure_url) {
+        throw new Error(cloudinaryData?.error?.message || "Image upload failed");
+      }
+
+      setForm((prev) => ({ ...prev, photoUrl: cloudinaryData.secure_url }));
+    } catch (uploadErr) {
+      setError(uploadErr.message || "Photo upload failed");
+    } finally {
+      setPhotoUploading(false);
+      e.target.value = "";
+    }
   };
 
   /* ── handlers ── */
@@ -194,7 +283,7 @@ function ProfileOnboarding({ user = {}, onComplete }) {
         let data;
         try {
           data = JSON.parse(text || "{}");
-        } catch (err) {
+        } catch {
           data = { error: text };
         }
 
@@ -414,6 +503,16 @@ function ProfileOnboarding({ user = {}, onComplete }) {
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     Profile Photo URL <span className="text-slate-400 text-xs">(optional)</span>
                   </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoFileChange}
+                    disabled={photoUploading}
+                    className="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 file:cursor-pointer cursor-pointer disabled:opacity-60"
+                  />
+                  {photoUploading && (
+                    <p className="mt-2 text-xs text-slate-400">Uploading photo...</p>
+                  )}
                   <div className="relative">
                     <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input

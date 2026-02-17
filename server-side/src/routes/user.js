@@ -2,7 +2,6 @@ const express = require("express");
 const userRouter = express.Router();
 const userAuth = require("../middlewares/auth");
 const ConnectionRequest = require("../model/connectionRequest");
-const { connection } = require("mongoose");
 const User = require("../model/userSchema");
 
 const USER_SAFE_DATA = "firstName lastName photoUrl age gender bio skills role";
@@ -60,10 +59,8 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
 
     //param - /:status - esse dete he
     //query - ?page=1 - esse dete he
-    const page = parseInt(req.query.page) || 1; //agar page query parameter nhi h to default 1 le lo
     let limit = parseInt(req.query.limit) || 10; //agar limit query parameter nhi h to default 10 le lo
     limit = limit > 50 ? 50 : limit; //max limit 50 rakh dete he
-    const skip = (page - 1)*limit; //calculate skip value for pagination
 
     //User should see all the cards except:
     //1. Himself/herself

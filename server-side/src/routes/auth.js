@@ -3,8 +3,6 @@ const authRouter= express.Router();
 const bcrypt = require("bcrypt");
 const User = require("../model/userSchema.js");
 const { validateSignupData } = require("../utils/validate.js");
-const jwt = require("jsonwebtoken");
-const axios = require("axios");
 const {OAuth2Client}= require("google-auth-library");
 
 

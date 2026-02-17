@@ -4,7 +4,6 @@ import {
   Route,
   Navigate,
   useLocation,
-  useNavigate,
 } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Signup from "./Pages/Signup";
@@ -124,77 +123,6 @@ const AuthGate = ({ children }) => {
   }
   return children;
 };
-
-function onboarding() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("http://localhost:1111/profile/view", {
-          credentials: "include",
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.data);
-        } else {
-          navigate("/login", { replace: true });
-        }
-      } catch (err) {
-        console.log("Profile fetched failed: ", err);
-        navigate("/login", { replace: true });
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [navigate]);
-
-  const handleComplete = (updateUser) => {
-    navigate("/feed");
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center animate-pulse">
-            <span className="text-white font-black text-2xl">&lt;/&gt;</span>
-          </div>
-          <p className="text-slate-600 font-bold tracking-widest uppercase text-xs animate-pulse">
-            Loading…
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  <ProfileOnboarding user={user} onComplete={handleComplete} />;
-}
-
-function HomePage() {
-  const navigate = useNavigate();
-
-  const handleLogOut = async () => {
-    try {
-      await fetch("http://localhost:1111/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch (err) {
-      console.log("Logout failed: ", err);
-    }
-    navigate("/login");
-  };
-
-  return <Feed onLogout={handleLogOut} />;
-}
 
 function App() {
   return (

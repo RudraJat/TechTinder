@@ -39,20 +39,20 @@ function Login() {
         );
         navigate(isComplete ? "/feed" : "/onboarding");
       }
-    } catch (err) {
+    } catch {
       setError("Invalid email or password");
     }
   };
 
   const handleGoogleSuccess = async (authResponse) => {
     try {
-      const res = await axios.post(
+      await axios.post(
         "http://localhost:1111/google-login",
         { credential: authResponse.credential },
         { withCredentials: true },
       );
       navigate("/feed");
-    } catch (error) {
+    } catch {
       setError("Google login failed");
     }
   };

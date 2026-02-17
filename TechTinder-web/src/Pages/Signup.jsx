@@ -36,7 +36,7 @@ function Signup() {
         { withCredentials: true },
       );
       navigate("/feed");
-    } catch (error) {
+    } catch {
       setError("Google signup failed");
     }
   };
