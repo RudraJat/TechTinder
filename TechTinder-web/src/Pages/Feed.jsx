@@ -202,7 +202,8 @@ function FeedCard({
 }
 
 /* ── Empty state ────────────────────────────── */
-function EmptyState({ icon: Icon, title, sub }) {
+function EmptyState({ icon, title, sub }) {
+  const Icon = icon;
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-8 py-20 gap-5">
       <div className="w-24 h-24 rounded-3xl bg-white/[0.04] border border-white/10 flex items-center justify-center">
@@ -481,7 +482,7 @@ function ConnectionsTab({ connections }) {
 }
 
 // Root page component for the feed (home) page
-function Feed({ onLogout }) {
+function Feed() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("feed");
   const [feed, setFeed] = useState([]);
@@ -494,15 +495,12 @@ function Feed({ onLogout }) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [swipeDir, setSwipeDir] = useState(null);
   const animating = useRef(false);
-  const touchStartX = useRef(0);
   const mouseStartX = useRef(0);
   const isDragging = useRef(false);
   const [dragX, setDragX] = useState(0); // live pixel offset while dragging
-  const [isSnapping, setIsSnapping] = useState(false); // true while the snap-back animation runs
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreUsers, setHasMoreUsers] = useState(true);
   const loadingRef = useRef(false);
   const seenIdsRef = useRef(new Set());
@@ -550,7 +548,6 @@ function Feed({ onLogout }) {
     // Trigger load when only 1 profile remains
     if (remainingProfiles <= 1) {
       loadingRef.current = true;
-      setIsLoadingMore(true);
 
       (async () => {
         try {
@@ -577,12 +574,11 @@ function Feed({ onLogout }) {
         } catch (e) {
           console.error("Error loading more users:", e);
         } finally {
-          setIsLoadingMore(false);
           loadingRef.current = false;
         }
       })();
     }
-  }, [currentIdx, feed.length, currentPage, hasMoreUsers]);
+  }, [currentIdx, feed, currentPage, hasMoreUsers]);
 
   /* ── swipe trigger ── */
   const triggerSwipe = useCallback((dir, userId, status) => {
@@ -615,11 +611,6 @@ function Feed({ onLogout }) {
     isDragging.current = true;
   };
 
-  const onTouchMove = (e) => {
-    if (!isDragging.current) return;
-    setDragX(e.touches[0].clientX - mouseStartX.current);
-  };
-
   const onTouchEnd = (e) => {
     if (!isDragging.current) return;
     isDragging.current = false;
@@ -638,9 +629,7 @@ function Feed({ onLogout }) {
         handlePass();
       }, 800);
     } else {
-      setIsSnapping(true);
       setDragX(0);
-      setTimeout(() => setIsSnapping(false), 800);
     }
   };
 
@@ -650,11 +639,6 @@ function Feed({ onLogout }) {
     e.preventDefault(); // stop text-select while dragging
     mouseStartX.current = e.clientX;
     isDragging.current = true;
-  };
-
-  const onMouseMove = (e) => {
-    if (!isDragging.current) return;
-    setDragX(e.clientX - mouseStartX.current); // update live offset
   };
 
   const onMouseUp = (e) => {
@@ -677,18 +661,14 @@ function Feed({ onLogout }) {
       }, 800);
     } else {
       // ── below threshold → snap back to center
-      setIsSnapping(true);
       setDragX(0);
-      setTimeout(() => setIsSnapping(false), 800); // duration matches the CSS transition
     }
   };
 
   const onMouseLeave = () => {
     if (!isDragging.current) return;
     isDragging.current = false;
-    setIsSnapping(true);
     setDragX(0);
-    setTimeout(() => setIsSnapping(false), 300);
   };
 
   /* ── request accept / reject ── */
@@ -768,7 +748,7 @@ function Feed({ onLogout }) {
 
             {/* Logout button */}
             <button
-              onClick={onLogout || handleLogout}
+              onClick={handleLogout}
               className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center hover:bg-rose-500/15 hover:border-rose-500/30 transition-all"
             >
               <LogOut className="w-4 h-4 text-slate-400" />

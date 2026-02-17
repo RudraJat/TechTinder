@@ -52,6 +52,9 @@ const userSchema = new mongoose.Schema(
         },
         default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnSSxXHLqu5lsHYkFlZkvXuo2ZamNvdqLiCg&s"
     },
+    public_id:{
+        type: String, //Very Important(b/c to delete or replace image later)
+    },
     age: {
         type: Number,   
         min: 13,
@@ -93,7 +96,11 @@ const userSchema = new mongoose.Schema(
     skills: {
         type: [String],
         default: []
-    }
+    },
+    isPremium: {
+        type: Boolean,
+        default: false,
+    },
     },
     {
         timestamps: true, // Automatically manage createdAt and updatedAt fields

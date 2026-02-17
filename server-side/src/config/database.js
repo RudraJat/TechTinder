@@ -1,3 +1,5 @@
+//This connects backend to MongoDB
+
 const mongoose = require("mongoose");
 
 const connectDB = async()=>{

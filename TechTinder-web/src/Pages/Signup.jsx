@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 import { Eye, EyeOff } from "lucide-react";
 
 function Signup() {
@@ -36,7 +36,7 @@ function Signup() {
         { withCredentials: true },
       );
       navigate("/feed");
-    } catch (error) {
+    } catch {
       setError("Google signup failed");
     }
   };
@@ -101,14 +101,10 @@ function Signup() {
           )}
 
           <div className="mb-6">
-            <GoogleOAuthProvider
-              clientId={import.meta.env.VITE_APP_GOOGLE_CLIENT_ID}
-            >
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-              />
-            </GoogleOAuthProvider>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+            />
           </div>
 
           <div className="relative mb-6">

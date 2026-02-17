@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 
 function Login() {
   const navigate = useNavigate();
@@ -39,20 +39,20 @@ function Login() {
         );
         navigate(isComplete ? "/feed" : "/onboarding");
       }
-    } catch (err) {
+    } catch {
       setError("Invalid email or password");
     }
   };
 
   const handleGoogleSuccess = async (authResponse) => {
     try {
-      const res = await axios.post(
+      await axios.post(
         "http://localhost:1111/google-login",
         { credential: authResponse.credential },
         { withCredentials: true },
       );
       navigate("/feed");
-    } catch (error) {
+    } catch {
       setError("Google login failed");
     }
   };
@@ -82,14 +82,10 @@ function Login() {
           )}
 
           <div className="space-y-4 mb-6">
-            <GoogleOAuthProvider
-              clientId={import.meta.env.VITE_APP_GOOGLE_CLIENT_ID}
-            >
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-              />
-            </GoogleOAuthProvider>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+            />
           </div>
 
           <div className="relative mb-6">

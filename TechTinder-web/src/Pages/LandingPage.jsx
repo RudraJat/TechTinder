@@ -156,11 +156,11 @@ function LandingPage() {
 
       {/* Pricing */}
       <section id="pricing" className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold text-center mb-12">
             Simple Pricing
           </h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8">
             {[
               {
                 name: "Free",
@@ -181,16 +181,6 @@ function LandingPage() {
                   "24/7 support",
                 ],
                 popular: true,
-              },
-              {
-                name: "Team",
-                price: "$49",
-                features: [
-                  "Everything in Pro",
-                  "Team workspace",
-                  "Admin dashboard",
-                  "API access",
-                ],
               },
             ].map((plan, i) => (
               <div
@@ -222,6 +212,7 @@ function LandingPage() {
                   ))}
                 </ul>
                 <button
+                  onClick={() => navigate("/signup")}
                   className={`w-full py-3 rounded-lg font-semibold transition-all duration-200 ${
                     plan.popular
                       ? "bg-purple-600 hover:bg-purple-700 hover:shadow-lg hover:shadow-purple-600/50 transform hover:scale-105"

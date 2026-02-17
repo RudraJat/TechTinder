@@ -1,23 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import {
   User, Mail, Lock, Image, FileText, Briefcase, Tag, Calendar, Users,
-  Edit3, Save, X, Eye, EyeOff, ArrowLeft, Camera, Check
+  Edit3, Save, X, Eye, EyeOff, ArrowLeft, Camera, Check, Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL = "http://localhost:1111";
-
-/* ──────────────────────────────────────────────
-   HELPER: gradient colors
-   ────────────────────────────────────────────── */
-const GRADS = [
-  "from-cyan-400 to-blue-500",
-  "from-purple-500 to-fuchsia-500",
-  "from-rose-400 to-pink-500",
-  "from-amber-400 to-orange-500",
-  "from-emerald-400 to-teal-500",
-];
-const gradOf = (s = "") => GRADS[s.charCodeAt(0) % GRADS.length];
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_API_KEY = import.meta.env.VITE_CLOUDINARY_API_KEY;
 
 const SKILL_BG = [
   "bg-cyan-500/15 text-cyan-300 border-cyan-500/25",
@@ -67,7 +57,33 @@ function ProfilePage() {
   /* ── feedback ── */
   const [msg, setMsg] = useState(null); // { type: "success"|"error", text }
   const [saving, setSaving] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [subscription, setSubscription] = useState(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [subscriptionProcessing, setSubscriptionProcessing] = useState(false);
   const fileInputRef = useRef(null);
+
+  const fetchSubscriptionStatus = async () => {
+    setSubscriptionLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/api/subscription-status`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        setSubscription(null);
+        return;
+      }
+
+      const data = await res.json();
+      setSubscription(data?.subscription || null);
+    } catch {
+      setSubscription(null);
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
 
   /* ── fetch user profile on mount ── */
   useEffect(() => {
@@ -90,6 +106,7 @@ function ProfilePage() {
             bio: u.bio || "",
             skills: u.skills || [],
           });
+          await fetchSubscriptionStatus();
         } else {
           navigate("/login");
         }
@@ -108,23 +125,231 @@ function ProfilePage() {
     setTimeout(() => setMsg(null), 6000);
   };
 
-  const handlePhotoFileChange = (e) => {
+  const fetchUploadSignature = async () => {
+    const candidateUrls = [
+      `${BASE_URL}/upload/get-signature`,
+      `${BASE_URL}/get-signature`,
+    ];
+
+    let lastError = "Unable to get upload signature";
+
+    for (const url of candidateUrls) {
+      const res = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        lastError = text || `Signature request failed (${res.status})`;
+        continue;
+      }
+
+      const data = await res.json();
+      if (data?.signature && data?.timestamp) return data;
+      lastError = data?.message || lastError;
+    }
+
+    throw new Error(lastError);
+  };
+
+  const handlePhotoFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
+
+    if (!file.type?.startsWith("image/")) {
       showMsg("error", "Please select an image file.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setForm((prev) => ({ ...prev, photoUrl: reader.result }));
-    };
-    reader.onerror = () => {
-      showMsg("error", "Failed to read image file.");
-    };
-    reader.readAsDataURL(file);
-    e.target.value = "";
+    if (file.size > 5 * 1024 * 1024) {
+      showMsg("error", "Image must be 5MB or smaller.");
+      return;
+    }
+
+    setPhotoUploading(true);
+
+    try {
+      const signatureData = await fetchUploadSignature();
+      const cloudName = signatureData.cloudName || CLOUDINARY_CLOUD_NAME;
+      const apiKey = signatureData.apiKey || CLOUDINARY_API_KEY;
+      const folder = signatureData.folder || "profile-photo";
+
+      if (!cloudName || !apiKey) {
+        throw new Error("Missing Cloudinary config for upload");
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("timestamp", String(signatureData.timestamp));
+      formData.append("signature", signatureData.signature);
+      formData.append("api_key", apiKey);
+      formData.append("folder", folder);
+
+      const cloudinaryRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const cloudinaryData = await cloudinaryRes.json();
+
+      if (!cloudinaryRes.ok || !cloudinaryData?.secure_url) {
+        throw new Error(cloudinaryData?.error?.message || "Image upload failed");
+      }
+
+      setForm((prev) => ({ ...prev, photoUrl: cloudinaryData.secure_url }));
+      showMsg("success", "Profile photo uploaded.");
+    } catch (err) {
+      showMsg("error", err.message || "Photo upload failed.");
+    } finally {
+      setPhotoUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleSubscribe = async () => {
+    if (!window.Razorpay) {
+      showMsg("error", "Razorpay SDK not loaded. Please refresh and try again.");
+      return;
+    }
+
+    setSubscriptionProcessing(true);
+    try {
+      let razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      if (!razorpayKey) {
+        const keyRes = await fetch(`${BASE_URL}/api/razorpay-key`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        const keyData = await keyRes.json();
+        if (!keyRes.ok || !keyData?.key) {
+          throw new Error(keyData?.error || "Missing Razorpay key configuration");
+        }
+
+        razorpayKey = keyData.key;
+      }
+
+      const response = await fetch(`${BASE_URL}/api/create-order`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to create order");
+      }
+
+      const options = {
+        key: razorpayKey,
+        order_id: data.id,
+        amount: data.amount,
+        currency: data.currency,
+        name: "TechTinder",
+        description: "Pro Membership - ₹19/month",
+        image: "https://techtinder.com/logo.png",
+        theme: { 
+          color: "#7c3aed",
+        },
+        prefill: {
+          name: `${user?.firstName} ${user?.lastName}`.trim(),
+          email: user?.email || "",
+          contact: user?.phone || "",
+          vpa: "success@razorpay",
+        },
+        method: {
+          netbanking: true,
+          card: true,
+          wallet: true,
+          upi: true,
+          cardless_emi: false,
+          paylater: false,
+          emandate: false,
+        },
+        modal: {
+          ondismiss: () => {
+            showMsg("error", "Payment cancelled. You can retry anytime.");
+          },
+          confirm_close: true,
+        },
+        notes: {
+          user_id: user?._id || "",
+          testMode: razorpayKey.includes("test_") ? "true" : "false",
+        },
+        handler: async (response) => {
+          try {
+            const verifyRes = await fetch(`${BASE_URL}/api/verify-payment`, {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            const verifyData = await verifyRes.json();
+            if (!verifyRes.ok) {
+              throw new Error(verifyData?.error || "Payment verification failed");
+            }
+
+            showMsg("success", "Payment successful! Your Pro membership is now active.");
+            setUser((prev) => ({ ...prev, isPremium: true }));
+            await fetchSubscriptionStatus();
+          } catch (verifyError) {
+            showMsg("error", verifyError.message || "Verification failed");
+          }
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      
+      rzp.on("payment.failed", (response) => {
+        showMsg("error", `Payment failed: ${response?.error?.description || "Please try again"}`);
+      });
+      
+      if (razorpayKey.includes("test_")) {
+        showMsg("success", "Test Mode: Use UPI ID 'success@razorpay' to simulate successful payment or 'failure@razorpay' for failed payment test.");
+      }
+      
+      rzp.open();
+    } catch (error) {
+      showMsg("error", error.message || "Unable to start payment");
+    } finally {
+      setSubscriptionProcessing(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!window.confirm("Cancel pending subscription? You can start a new one anytime.")) {
+      return;
+    }
+
+    setSubscriptionProcessing(true);
+    try {
+      const res = await fetch(`${BASE_URL}/api/cancel-subscription`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to cancel subscription");
+      }
+
+      showMsg("success", data.message || "Subscription cancelled");
+      await fetchSubscriptionStatus();
+    } catch (error) {
+      showMsg("error", error.message || "Failed to cancel");
+    } finally {
+      setSubscriptionProcessing(false);
+    }
   };
 
   /* ── handle form input change ── */
@@ -341,6 +566,60 @@ function ProfilePage() {
           </div>
         )}
 
+        <div className="mb-6 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                <Zap className="w-4 h-4 text-purple-400" />
+                Pro Membership
+              </h3>
+              <p className="text-sm text-slate-400 mt-1">
+                Unlock unlimited matches and priority matching.
+              </p>
+              {subscriptionLoading ? (
+                <p className="text-xs text-slate-500 mt-2">Checking subscription status...</p>
+              ) : subscription?.status ? (
+                <p className="text-xs text-slate-500 mt-2">
+                  Latest subscription status: <span className="font-semibold text-slate-300">{subscription.status}</span>
+                </p>
+              ) : (
+                <p className="text-xs text-slate-500 mt-2">No subscription found.</p>
+              )}
+            </div>
+
+            {user?.isPremium ? (
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                Pro Active
+              </span>
+            ) : subscription?.status === "created" ? (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSubscribe}
+                  disabled={subscriptionProcessing}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {subscriptionProcessing ? "Retrying..." : "Retry"}
+                </button>
+                <button
+                  onClick={handleCancelSubscription}
+                  disabled={subscriptionProcessing}
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleSubscribe}
+                disabled={subscriptionProcessing}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {subscriptionProcessing ? "Starting..." : "Buy Pro"}
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* ═══ Profile Card ═══ */}
         <div className="bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl shadow-black/20 overflow-hidden">
           {/* ── Avatar section ── */}
@@ -358,6 +637,7 @@ function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={photoUploading}
                   className="absolute -bottom-2 -right-2 w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:scale-110 transition-transform"
                   aria-label="Upload profile photo"
                 >
@@ -365,6 +645,9 @@ function ProfilePage() {
                 </button>
               )}
             </div>
+            {editMode && photoUploading && (
+              <p className="absolute bottom-3 text-xs font-semibold text-slate-300">Uploading photo...</p>
+            )}
             <input
               ref={fileInputRef}
               type="file"
@@ -623,7 +906,7 @@ function ProfilePage() {
               <div className="flex gap-4 pt-4">
                 <button
                   onClick={handleCancelEdit}
-                  disabled={saving}
+                  disabled={saving || photoUploading}
                   className="flex-1 py-3 bg-white/[0.06] border border-white/10 text-slate-300 font-bold rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <X className="w-4 h-4" />
@@ -631,7 +914,7 @@ function ProfilePage() {
                 </button>
                 <button
                   onClick={handleSaveProfile}
-                  disabled={saving}
+                  disabled={saving || photoUploading}
                   className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? (
