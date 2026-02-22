@@ -10,14 +10,20 @@ const CLOUDINARY_API_KEY = import.meta.env.VITE_CLOUDINARY_API_KEY;
 /* ══════════════════════════════════════════════
    MAIN COMPONENT
    ══════════════════════════════════════════════ */
-function ProfileOnboarding({ user = {}, onComplete }) {
+function ProfileOnboarding({ user = null, onComplete }) {
   const navigate = useNavigate();
   
   /* ── Fetch user data on mount ── */
-  const [userData, setUserData] = useState(user);
+  const [userData, setUserData] = useState(user || {});
   const [loading, setLoading] = useState(!user?.firstName);
 
   useEffect(() => {
+    if (user?.firstName) {
+      setUserData(user);
+      setLoading(false);
+      return;
+    }
+
     if (!user?.firstName) {
       // If user data is not passed, fetch it
       const fetchUser = async () => {
@@ -45,7 +51,7 @@ function ProfileOnboarding({ user = {}, onComplete }) {
     } else {
       setLoading(false);
     }
-  }, [user, navigate]);
+  }, [user?.email, navigate]);
 
   /* ── form state (seeded from user object) ── */
   const [form, setForm] = useState({
@@ -207,6 +213,26 @@ function ProfileOnboarding({ user = {}, onComplete }) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setError(null);
+  };
+
+  const handleAgeChange = (e) => {
+    const rawValue = e.target.value;
+    if (rawValue === "" || /^\d{0,3}$/.test(rawValue)) {
+      setForm((prev) => ({ ...prev, age: rawValue }));
+      setError(null);
+    }
+  };
+
+  const handleAgeBlur = () => {
+    if (form.age === "") return;
+    const numericAge = Number.parseInt(form.age, 10);
+    if (Number.isNaN(numericAge)) {
+      setForm((prev) => ({ ...prev, age: "" }));
+      return;
+    }
+
+    const clampedAge = Math.max(13, Math.min(100, numericAge));
+    setForm((prev) => ({ ...prev, age: String(clampedAge) }));
   };
 
   /* ── handle role selection (multiple, max 3) ── */
@@ -397,7 +423,9 @@ function ProfileOnboarding({ user = {}, onComplete }) {
                     type="number"
                     name="age"
                     value={form.age}
-                    onChange={handleChange}
+                    onChange={handleAgeChange}
+                    onBlur={handleAgeBlur}
+                    onWheel={(e) => e.currentTarget.blur()}
                     placeholder="25"
                     className={inputCls}
                     min="13"

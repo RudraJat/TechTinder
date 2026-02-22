@@ -358,6 +358,25 @@ function ProfilePage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleAgeChange = (e) => {
+    const rawValue = e.target.value;
+    if (rawValue === "" || /^\d{0,3}$/.test(rawValue)) {
+      setForm((prev) => ({ ...prev, age: rawValue }));
+    }
+  };
+
+  const handleAgeBlur = () => {
+    if (form.age === "") return;
+    const numericAge = Number.parseInt(form.age, 10);
+    if (Number.isNaN(numericAge)) {
+      setForm((prev) => ({ ...prev, age: "" }));
+      return;
+    }
+
+    const clampedAge = Math.max(13, Math.min(100, numericAge));
+    setForm((prev) => ({ ...prev, age: String(clampedAge) }));
+  };
+
   /* ── skills: comma-separated string ↔ array ── */
   const [skillInput, setSkillInput] = useState("");
   
@@ -401,11 +420,19 @@ function ProfilePage() {
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
+      const payload = {
+        ...form,
+        age:
+          form.age === ""
+            ? ""
+            : Math.max(13, Math.min(100, Number.parseInt(form.age, 10))),
+      };
+
       const res = await fetch(`${BASE_URL}/profile/edit`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to save");
@@ -720,7 +747,9 @@ function ProfilePage() {
                   type="number"
                   name="age"
                   value={form.age}
-                  onChange={handleChange}
+                  onChange={handleAgeChange}
+                  onBlur={handleAgeBlur}
+                  onWheel={(e) => e.currentTarget.blur()}
                   disabled={!editMode}
                   min="13"
                   max="100"
