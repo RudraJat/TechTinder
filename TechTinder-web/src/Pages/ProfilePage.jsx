@@ -60,7 +60,6 @@ function ProfilePage() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [subscription, setSubscription] = useState(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
-  const [subscriptionProcessing, setSubscriptionProcessing] = useState(false);
   const fileInputRef = useRef(null);
 
   const fetchSubscriptionStatus = async () => {
@@ -207,148 +206,6 @@ function ProfilePage() {
     } finally {
       setPhotoUploading(false);
       e.target.value = "";
-    }
-  };
-
-  const handleSubscribe = async () => {
-    if (!window.Razorpay) {
-      showMsg("error", "Razorpay SDK not loaded. Please refresh and try again.");
-      return;
-    }
-
-    setSubscriptionProcessing(true);
-    try {
-      let razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
-      if (!razorpayKey) {
-        const keyRes = await fetch(`${BASE_URL}/api/razorpay-key`, {
-          method: "GET",
-          credentials: "include",
-        });
-
-        const keyData = await keyRes.json();
-        if (!keyRes.ok || !keyData?.key) {
-          throw new Error(keyData?.error || "Missing Razorpay key configuration");
-        }
-
-        razorpayKey = keyData.key;
-      }
-
-      const response = await fetch(`${BASE_URL}/api/create-order`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.error || "Failed to create order");
-      }
-
-      const options = {
-        key: razorpayKey,
-        order_id: data.id,
-        amount: data.amount,
-        currency: data.currency,
-        name: "TechTinder",
-        description: "Pro Membership - ₹19/month",
-        image: "https://techtinder.com/logo.png",
-        theme: { 
-          color: "#7c3aed",
-        },
-        prefill: {
-          name: `${user?.firstName} ${user?.lastName}`.trim(),
-          email: user?.email || "",
-          contact: user?.phone || "",
-          vpa: "success@razorpay",
-        },
-        method: {
-          netbanking: true,
-          card: true,
-          wallet: true,
-          upi: true,
-          cardless_emi: false,
-          paylater: false,
-          emandate: false,
-        },
-        modal: {
-          ondismiss: () => {
-            showMsg("error", "Payment cancelled. You can retry anytime.");
-          },
-          confirm_close: true,
-        },
-        notes: {
-          user_id: user?._id || "",
-          testMode: razorpayKey.includes("test_") ? "true" : "false",
-        },
-        handler: async (response) => {
-          try {
-            const verifyRes = await fetch(`${BASE_URL}/api/verify-payment`, {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
-
-            const verifyData = await verifyRes.json();
-            if (!verifyRes.ok) {
-              throw new Error(verifyData?.error || "Payment verification failed");
-            }
-
-            showMsg("success", "Payment successful! Your Pro membership is now active.");
-            setUser((prev) => ({ ...prev, isPremium: true }));
-            await fetchSubscriptionStatus();
-          } catch (verifyError) {
-            showMsg("error", verifyError.message || "Verification failed");
-          }
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      
-      rzp.on("payment.failed", (response) => {
-        showMsg("error", `Payment failed: ${response?.error?.description || "Please try again"}`);
-      });
-      
-      if (razorpayKey.includes("test_")) {
-        showMsg("success", "Test Mode: Use UPI ID 'success@razorpay' to simulate successful payment or 'failure@razorpay' for failed payment test.");
-      }
-      
-      rzp.open();
-    } catch (error) {
-      showMsg("error", error.message || "Unable to start payment");
-    } finally {
-      setSubscriptionProcessing(false);
-    }
-  };
-
-  const handleCancelSubscription = async () => {
-    if (!window.confirm("Cancel pending subscription? You can start a new one anytime.")) {
-      return;
-    }
-
-    setSubscriptionProcessing(true);
-    try {
-      const res = await fetch(`${BASE_URL}/api/cancel-subscription`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error || "Failed to cancel subscription");
-      }
-
-      showMsg("success", data.message || "Subscription cancelled");
-      await fetchSubscriptionStatus();
-    } catch (error) {
-      showMsg("error", error.message || "Failed to cancel");
-    } finally {
-      setSubscriptionProcessing(false);
     }
   };
 
@@ -618,30 +475,12 @@ function ProfilePage() {
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                 Pro Active
               </span>
-            ) : subscription?.status === "created" ? (
-              <div className="flex gap-2">
-                <button
-                  onClick={handleSubscribe}
-                  disabled={subscriptionProcessing}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {subscriptionProcessing ? "Retrying..." : "Retry"}
-                </button>
-                <button
-                  onClick={handleCancelSubscription}
-                  disabled={subscriptionProcessing}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Cancel
-                </button>
-              </div>
             ) : (
               <button
-                onClick={handleSubscribe}
-                disabled={subscriptionProcessing}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => navigate("/pro")}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-all"
               >
-                {subscriptionProcessing ? "Starting..." : "Buy Pro"}
+                View Pro Plans
               </button>
             )}
           </div>

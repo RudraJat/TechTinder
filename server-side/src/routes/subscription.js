@@ -8,6 +8,26 @@ const crypto = require("crypto");
 const router = express.Router();
 let cachedAutoPlanId = null;
 
+const PRO_PLAN_CATALOG = {
+    week: {
+        amountPaise: 9900,
+        durationDays: 7,
+        displayName: "TechTinder Pro - 1 Week",
+    },
+    month: {
+        amountPaise: 1900,
+        durationDays: 30,
+        displayName: "TechTinder Pro - 1 Month",
+    },
+    six_months: {
+        amountPaise: 81900,
+        durationDays: 180,
+        displayName: "TechTinder Pro - 6 Months",
+    },
+};
+
+const DEFAULT_PRO_PLAN_KEY = "month";
+
 const createAutoPlan = async () => {
     const createdPlan = await razorpay.plans.create({
         period: "monthly",
@@ -107,6 +127,11 @@ router.get("/razorpay-health", async (req, res) => {
 router.post("/create-order", userAuth, async (req, res) => {
     try {
         const userId = req.user?._id;
+        const requestedPlanKey = req.body?.planKey;
+        const selectedPlanKey = PRO_PLAN_CATALOG[requestedPlanKey]
+            ? requestedPlanKey
+            : DEFAULT_PRO_PLAN_KEY;
+        const selectedPlan = PRO_PLAN_CATALOG[selectedPlanKey];
 
         const user = await User.findById(userId).select("isPremium email");
         if (!user) {
@@ -124,13 +149,15 @@ router.post("/create-order", userAuth, async (req, res) => {
         }
 
         const order = await razorpay.orders.create({
-            amount: 1900,
+            amount: selectedPlan.amountPaise,
             currency: "INR",
             receipt: `pro-${userId.toString().slice(-8)}-${Date.now().toString().slice(-6)}`,
             notes: {
                 userId: userId.toString(),
                 userEmail: user.email,
-                planName: "TechTinder Pro Monthly",
+                planName: selectedPlan.displayName,
+                planKey: selectedPlanKey,
+                durationDays: String(selectedPlan.durationDays),
             },
         });
 
@@ -305,13 +332,17 @@ router.post("/verify-payment", userAuth, async (req, res) => {
             });
         }
 
+        const razorpayOrder = await razorpay.orders.fetch(razorpay_order_id);
+        const orderPlanKey = razorpayOrder?.notes?.planKey;
+        const selectedPlan = PRO_PLAN_CATALOG[orderPlanKey] || PRO_PLAN_CATALOG[DEFAULT_PRO_PLAN_KEY];
+
         await User.updateOne(
             { _id: userId },
             { isPremium: true }
         );
 
         const now = new Date();
-        const nextMonth = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const planEndDate = new Date(now.getTime() + selectedPlan.durationDays * 24 * 60 * 60 * 1000);
 
         await Subscription.create({
             user: userId,
@@ -319,11 +350,12 @@ router.post("/verify-payment", userAuth, async (req, res) => {
             razorpayOrderId: razorpay_order_id,
             razorpayPaymentId: razorpay_payment_id,
             status: "active",
-            amount: 1900,
+            amount: razorpayOrder?.amount || selectedPlan.amountPaise,
             currentStart: now,
-            currentEnd: nextMonth,
+            currentEnd: planEndDate,
             paidCount: 1,
             totalCount: 1,
+            planId: orderPlanKey || DEFAULT_PRO_PLAN_KEY,
         });
 
         res.json({

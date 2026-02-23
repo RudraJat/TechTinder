@@ -16,6 +16,7 @@ import Feed from "./Pages/Feed";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import ProfileOnboarding from "./Pages/ProfileOnboarding";
 import ProfilePage from "./Pages/ProfilePage";
+import ProPlans from "./Pages/ProPlans";
 
 //Check if profile is complete or not
 const isProfileComplete = (user) => {
@@ -160,6 +161,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pro"
+              element={
+                <ProtectedRoute>
+                  <ProPlans />
                 </ProtectedRoute>
               }
             />

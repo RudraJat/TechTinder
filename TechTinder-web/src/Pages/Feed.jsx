@@ -14,6 +14,7 @@ import {
   ChevronUp,
   MessageCircle,
   User,
+  Zap,
 } from "lucide-react";
 import LoadingScreen from "../Components/LoadingScreen";
 
@@ -734,6 +735,18 @@ function Feed() {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate("/pro")}
+              className={`h-9 px-3 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all ${
+                currentUser?.isPremium
+                  ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                  : "bg-white/[0.06] border-white/10 text-slate-300 hover:border-purple-500/30"
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              {currentUser?.isPremium ? "Pro" : "Go Pro"}
+            </button>
+
             {/* Profile button */}
             <button
               onClick={() => navigate("/profile")}
