@@ -10,7 +10,7 @@ const ProtectedRoute = ({ children }) => {
     // Check if user is authenticated by calling your backend
     const checkAuth = async () => {
       try {
-        const response = await fetch('http://localhost:1111/profile/view', {
+        const response = await fetch('/profile/view', {
           method: 'GET',
           credentials: 'include', // Important: sends cookies
           headers: {

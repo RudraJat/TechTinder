@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, User, Briefcase, Image, FileText, Tag } from "lucide-react";
 import LoadingScreen from "../Components/LoadingScreen";
 
-const BASE_URL = "http://localhost:1111";
+const BASE_URL = "";
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_API_KEY = import.meta.env.VITE_CLOUDINARY_API_KEY;
 
@@ -295,8 +295,6 @@ function ProfileOnboarding({ user = null, onComplete }) {
             if (v !== "" && v != null) payload[k] = v;
           }
         });
-
-        console.debug("Submitting profile edit payload:", payload);
 
         const res = await fetch(`${BASE_URL}/profile/edit`, {
           method: "PATCH",

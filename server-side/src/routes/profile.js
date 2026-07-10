@@ -7,11 +7,8 @@ const {
 const bcrypt = require("bcrypt");
 
 const profileRouter = express.Router();
-//get cookies
-//yha userAuth middleware phle call hoga or agar authentication ho gyi to hi aage profile wala code chalega
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
-    //fetching user from database
     const user = req.user;
     res.json({"data": user});
   } catch (err) {
@@ -30,7 +27,6 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
       loggedInUser[key] = req.body[key];
     });
 
-    //saving updated user to database
     await loggedInUser.save();
     res.json({
       message: `${loggedInUser.firstName}, your profile is updated successfully!`,

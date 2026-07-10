@@ -8,19 +8,31 @@ const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 const uploadRouter = require("./routes/upload.js");
-const cors = require("cors");
 
 //creating an express app
 const app = express();
 
 //using CORS middleware to allow requests from frontend server
+const allowedOrigin = "http://localhost:5173";
 
-app.use(cors({
-  origin: "http://localhost:5173",
-  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use((req, res, next) => {
+  const requestOrigin = req.headers.origin;
+
+  if (requestOrigin === allowedOrigin) {
+    res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,PUT,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
+    res.setHeader("Access-Control-Expose-Headers", "Set-Cookie");
+  }
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
 
 //webhook route - WE ARE KEEPING IT ABOVE  express.json() BECAUSE WEBHOOK NEEDS RAW BODY FRO SIGNATURE VERIFICATION.
 const webhookRoute = require("./routes/webhook");

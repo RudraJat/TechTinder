@@ -44,7 +44,7 @@ const AuthGate = ({ children }) => {
       setLoading(true);
       try {
         // Check if token exists in cookies by making a request
-        const response = await fetch("http://localhost:1111/profile/view", {
+        const response = await fetch("/profile/view", {
           method: "GET",
           credentials: "include", //yeh cookie bhejega request ke sath
           headers: {
@@ -103,14 +103,6 @@ const AuthGate = ({ children }) => {
 
   if (isAuthenticated && user) {
     const profileComplete = isProfileComplete(user);
-
-    //replace - it'll not allow to go back to last page that we were on
-
-    if (["/", "/signup", "/login"].includes(location.pathname)) {
-      return (
-        <Navigate to={profileComplete ? "/feed" : "/onboarding"} replace />
-      );
-    }
 
     if (location.pathname === "/feed" && !profileComplete) {
       return <Navigate to="/onboarding" replace />;

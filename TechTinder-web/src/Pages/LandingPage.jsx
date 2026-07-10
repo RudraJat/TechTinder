@@ -10,10 +10,10 @@ function LandingPage() {
   const [userCount, setUserCount] = useState(0);
 
   useEffect(() => {
-    fetch("http://localhost:1111/stats")
+    fetch("/stats")
       .then((res) => res.json())
       .then((data) => setUserCount(data.activeDevs || 0))
-      .catch((err) => console.log(err));
+      .catch((err) => console.error("Failed to load stats:", err));
 
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);

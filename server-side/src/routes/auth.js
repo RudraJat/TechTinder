@@ -110,6 +110,7 @@ authRouter.post("/google-login", async (req, res) => {
         email,
         googleId,
         photoUrl: picture || undefined,
+        role: ["Other"],
       });
       await user.save();
     } else if (!user.googleId) {

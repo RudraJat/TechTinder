@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Check, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
-const BASE_URL = "http://localhost:1111";
+const BASE_URL = "";
 
 const plan = {
   name: "Pro",

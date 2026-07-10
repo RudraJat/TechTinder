@@ -16,13 +16,13 @@ function Login() {
     setError("");
     try {
       const res = await axios.post(
-        "http://localhost:1111/login",
+        "/login",
         { email, password },
         { withCredentials: true },
       );
 
       if (res.status === 200) {
-        const profileRes = await fetch("http://localhost:1111/profile/view", {
+        const profileRes = await fetch("/profile/view", {
           credentials: "include",
         });
         const profileData = await profileRes.json();
@@ -47,7 +47,7 @@ function Login() {
   const handleGoogleSuccess = async (authResponse) => {
     try {
       await axios.post(
-        "http://localhost:1111/google-login",
+        "/google-login",
         { credential: authResponse.credential },
         { withCredentials: true },
       );

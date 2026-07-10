@@ -21,7 +21,7 @@ import LoadingScreen from "../Components/LoadingScreen";
 /* ──────────────────────────────────────────────
    CONFIG  – point BASE_URL at your Express server
    ────────────────────────────────────────────── */
-const BASE_URL = "http://localhost:1111";
+const BASE_URL = "";
 
 /* ──────────────────────────────────────────────
    HELPERS
