@@ -31,7 +31,7 @@ function Signup() {
   const handleGoogleSuccess = async (authResponse) => {
     try {
       await axios.post(
-        "/google-login",
+        "/api/google-login",
         { credential: authResponse.credential },
         { withCredentials: true },
       );
@@ -61,7 +61,7 @@ function Signup() {
 
     try {
       const res = await axios.post(
-        "/signup",
+        "/api/signup",
         {
           firstName: formData.firstName,
           lastName: formData.lastName,

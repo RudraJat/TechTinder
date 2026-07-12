@@ -1,16 +1,19 @@
 const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../.env") });
+require("dotenv").config({ path: path.join(__dirname, "../.env"), quiet: true });
 const express = require("express");
+const http = require("http");
 const connectDB = require("./config/database.js");
 const cookieParser = require("cookie-parser");
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
+const chatRouter = require("./routes/chat");
 const userRouter = require("./routes/user");
 const uploadRouter = require("./routes/upload.js");
 
 //creating an express app
 const app = express();
+const server = http.createServer(app);
 
 //using CORS middleware to allow requests from frontend server
 const allowedOrigin = "http://localhost:5173";
@@ -47,16 +50,21 @@ const subscriptionRoute = require("./routes/subscription");
 app.use("/api",subscriptionRoute);
 
 //using auth router middleware
+app.use("/api", authRouter);
 app.use("/", authRouter);
+app.use("/api", profileRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
+app.use("/", chatRouter);
 app.use("/", userRouter);
 app.use("/upload", uploadRouter);
 
 connectDB()
   .then(() => {
     console.log("Database connected successfully!");
-    app.listen(1111, () => {
+    const initSocket = require("./config/socket");
+    initSocket(server);
+    server.listen(1111, () => {
       console.log("Server is listening on port 1111");
     });
   })

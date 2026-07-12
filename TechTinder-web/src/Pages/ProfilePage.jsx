@@ -88,7 +88,7 @@ function ProfilePage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${BASE_URL}/profile/view`, {
+        const res = await fetch(`${BASE_URL}/api/profile/view`, {
           credentials: "include",
         });
         if (res.ok) {
@@ -285,7 +285,7 @@ function ProfilePage() {
             : Math.max(13, Math.min(100, Number.parseInt(form.age, 10))),
       };
 
-      const res = await fetch(`${BASE_URL}/profile/edit`, {
+      const res = await fetch(`${BASE_URL}/api/profile/edit`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -358,7 +358,7 @@ function ProfilePage() {
 
     setSaving(true);
     try {
-      const res = await fetch(`${BASE_URL}/profile/passwordChange`, {
+      const res = await fetch(`${BASE_URL}/api/profile/passwordChange`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

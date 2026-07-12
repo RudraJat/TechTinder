@@ -21,7 +21,7 @@ import LoadingScreen from "../Components/LoadingScreen";
 /* ──────────────────────────────────────────────
    CONFIG  – point BASE_URL at your Express server
    ────────────────────────────────────────────── */
-const BASE_URL = "";
+const BASE_URL = import.meta.env.VITE_API_URL || "";
 
 /* ──────────────────────────────────────────────
    HELPERS
@@ -52,8 +52,9 @@ async function api(path) {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
   });
-  if (!r.ok) throw new Error(await r.text());
-  return r.json();
+  const text = await r.text();
+  if (!r.ok) throw new Error(text || `Request failed with status ${r.status}`);
+  return text ? JSON.parse(text) : {};
 }
 
 async function apiPost(path, body) {
@@ -63,7 +64,9 @@ async function apiPost(path, body) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  return r.json();
+  const text = await r.text();
+  if (!r.ok) throw new Error(text || `Request failed with status ${r.status}`);
+  return text ? JSON.parse(text) : {};
 }
 
 /*SUB-COMPONENTS*/
@@ -381,7 +384,7 @@ function RequestsTab({ requests, onAccept, onReject }) {
 }
 
 /* ── CONNECTIONS TAB ────────────────────────── */
-function ConnectionsTab({ connections }) {
+function ConnectionsTab({ connections, onMessage }) {
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState(null);
 
@@ -470,7 +473,10 @@ function ConnectionsTab({ connections }) {
                   {c.bio}
                 </p>
                 <SkillPills skills={c.skills} />
-                <button className="mt-4 w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-purple-500/20 hover:shadow-purple-500/40 transition-all">
+                <button
+                  onClick={() => onMessage?.(c._id)}
+                  className="mt-4 w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-purple-500/20 hover:shadow-purple-500/40 transition-all"
+                >
                   <MessageCircle className="w-4 h-4" /> Send Message
                 </button>
               </div>
@@ -505,6 +511,19 @@ function Feed() {
   const [hasMoreUsers, setHasMoreUsers] = useState(true);
   const loadingRef = useRef(false);
   const seenIdsRef = useRef(new Set());
+  const [chatError, setChatError] = useState("");
+
+  const openChat = useCallback(async (userId) => {
+    try {
+      setChatError("");
+      const response = await apiPost(`/chat/conversations/${userId}`, {});
+      const conversationId = response?.data?.conversation?._id;
+      if (!conversationId) throw new Error("Conversation id missing.");
+      navigate(`/chat/${conversationId}`);
+    } catch (err) {
+      setChatError(err.message || "Failed to open chat.");
+    }
+  }, [navigate]);
 
   /* ── fetch everything in parallel on mount ── */
   useEffect(() => {
@@ -515,7 +534,7 @@ function Feed() {
           api("/user/request/received"),
           api("/user/connections"),
           api("/stats"),
-          api("/profile/view"),
+          api("/api/profile/view"),
         ]);
 
         // Handle all responses
@@ -702,7 +721,7 @@ function Feed() {
       return;
     }
     try {
-      await apiPost("/logout", {});
+      await apiPost("/api/logout", {});
       navigate("/");
     } catch (err) {
       console.error("Error logging out:", err);
@@ -813,6 +832,11 @@ function Feed() {
 
       {/* ═══ TAB CONTENT ═══ */}
       <main className="flex-1 flex flex-col overflow-hidden">
+        {chatError && (
+          <div className="mx-4 mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+            {chatError}
+          </div>
+        )}
         {tab === "feed" && (
           <FeedTab
             feed={feed}
@@ -836,7 +860,7 @@ function Feed() {
             onReject={handleReject}
           />
         )}
-        {tab === "connections" && <ConnectionsTab connections={connections} />}
+        {tab === "connections" && <ConnectionsTab connections={connections} onMessage={openChat} />}
       </main>
 
       {/* iOS safe area */}

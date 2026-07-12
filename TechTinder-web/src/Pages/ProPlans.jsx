@@ -29,7 +29,7 @@ function ProPlans() {
 
   const fetchStatus = async () => {
     const [profileRes, subscriptionRes] = await Promise.all([
-      fetch(`${BASE_URL}/profile/view`, {
+      fetch(`${BASE_URL}/api/profile/view`, {
         method: "GET",
         credentials: "include",
       }),

@@ -17,6 +17,7 @@ import ProtectedRoute from "./Components/ProtectedRoute";
 import ProfileOnboarding from "./Pages/ProfileOnboarding";
 import ProfilePage from "./Pages/ProfilePage";
 import ProPlans from "./Pages/ProPlans";
+import ChatPage from "./Pages/ChatPage";
 
 //Check if profile is complete or not
 const isProfileComplete = (user) => {
@@ -44,7 +45,7 @@ const AuthGate = ({ children }) => {
       setLoading(true);
       try {
         // Check if token exists in cookies by making a request
-        const response = await fetch("/profile/view", {
+        const response = await fetch("/api/profile/view", {
           method: "GET",
           credentials: "include", //yeh cookie bhejega request ke sath
           headers: {
@@ -153,6 +154,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat/:conversationId"
+              element={
+                <ProtectedRoute>
+                  <ChatPage />
                 </ProtectedRoute>
               }
             />

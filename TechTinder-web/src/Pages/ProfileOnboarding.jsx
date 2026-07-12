@@ -28,7 +28,7 @@ function ProfileOnboarding({ user = null, onComplete }) {
       // If user data is not passed, fetch it
       const fetchUser = async () => {
         try {
-          const res = await fetch(`${BASE_URL}/profile/view`, {
+          const res = await fetch(`${BASE_URL}/api/profile/view`, {
             method: "GET",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
@@ -278,7 +278,7 @@ function ProfileOnboarding({ user = null, onComplete }) {
     if (step < 3) {
       setStep(step + 1);
     } else {
-      // final step → PATCH /profile/edit
+      // final step → PATCH /api/profile/edit
       setSaving(true);
       setError(null);
       try {
@@ -296,7 +296,7 @@ function ProfileOnboarding({ user = null, onComplete }) {
           }
         });
 
-        const res = await fetch(`${BASE_URL}/profile/edit`, {
+        const res = await fetch(`${BASE_URL}/api/profile/edit`, {
           method: "PATCH",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -312,7 +312,7 @@ function ProfileOnboarding({ user = null, onComplete }) {
         }
 
         if (!res.ok) {
-          console.error("/profile/edit failed", res.status, data);
+          console.error("/api/profile/edit failed", res.status, data);
           throw new Error(data.error || `Failed to save profile (status ${res.status})`);
         }
 
