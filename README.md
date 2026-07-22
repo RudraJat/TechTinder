@@ -14,7 +14,6 @@
  - When user logout it should ask again that you want to logout or not
 
 FRONTEND
-
 #TechTinder-web
 
 BODY
